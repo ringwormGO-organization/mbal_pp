@@ -12,12 +12,13 @@
 #include <vector>
 
 #include "Error.hpp"
+#include "Position.hpp"
 #include "Token.hpp"
 
 class Lexer
 {
     public:
-        Lexer(std::string text);
+        Lexer(std::string fn, std::string text);
         ~Lexer();
 
         void advance();
@@ -25,9 +26,11 @@ class Lexer
         Token make_number();
 
     private:
+        std::string fn = "";
         std::string text = "";
+
         char current_char = '\0';
-        signed long pos = -1;
+        Position pos;
 
         std::string DIGITS = "0123456789";
 };

@@ -6,9 +6,11 @@
 
 #include "Lexer.hpp"
 
-Lexer::Lexer(std::string text)
+Lexer::Lexer(std::string fn, std::string text) : pos(-1, 0, -1, fn, text)
 {
+    this->fn = fn;
     this->text = text;
+
     this->advance();
 }
 
@@ -19,11 +21,11 @@ Lexer::~Lexer()
 
 void Lexer::advance()
 {
-    this->pos += 1;
+    this->pos.advance(this->current_char);
     
-    if (this->pos < this->text.size())
+    if (this->pos.idx < this->text.size())
     {
-        this->current_char = text.at(this->pos);
+        this->current_char = text.at(this->pos.idx);
     }
 
     else
@@ -93,13 +95,12 @@ std::tuple<std::vector<Token>, Error> Lexer::make_tokens()
 
         else
         {
+            Position pos_start = this->pos.copy();
+
             char ch = this->current_char;
             this->advance();
 
-            std::string details = "'";
-            details += std::to_string(ch) += "'";
-
-            return std::make_tuple(empty_vector, IllegalCharError(details));
+            return std::make_tuple(empty_vector, IllegalCharError(pos_start, this->pos, (std::string("'") += std::to_string(ch)) += "'"));
         }
     }
 

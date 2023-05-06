@@ -5,7 +5,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 
 ## TODO
 ### From Code Pulse's tutorial
-- [ ] EP 1 - Lexer
+- [x] EP 1 - Lexer
 - [ ] EP 2 - Parser
 - [ ] EP 3 - Intepreter
 - [ ] EP 4 - Variables

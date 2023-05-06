@@ -24,7 +24,7 @@ int main()
             exit(0);
         }
 
-        Lexer lexer(input);
+        Lexer lexer("<stdin>", input);
         auto result = lexer.make_tokens();
 
         if (std::get<1>(result).error_name.size() > 0)
