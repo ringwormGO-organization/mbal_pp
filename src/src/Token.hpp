@@ -18,6 +18,7 @@ enum TT {
     DIV,
     LPAREN,
     RPAREN,
+    NUL,
 };
 
 class Token
