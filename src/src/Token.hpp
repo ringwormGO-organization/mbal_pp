@@ -9,6 +9,9 @@
 #include <iostream>
 #include <string>
 
+#include "Error.hpp"
+#include "Position.hpp"
+
 enum TT {
     INT,
     FLOAT,
@@ -18,20 +21,26 @@ enum TT {
     DIV,
     LPAREN,
     RPAREN,
+    END_OF_FILE,
     NUL,
 };
 
 class Token
 {
     public:
-        Token(TT type, std::string value = "");
+        Token(TT type, Position pos_start = EMPTY_POSITION, std::string value = "", Position pos_end = EMPTY_POSITION);
         ~Token();
 
         std::string repr();
         std::string enum_to_string();
 
+    public:
         TT type;
-    private:
         std::string value = "";
 
+        Position pos_start;
+        Position pos_end;
 };
+
+bool operator==(const Position& pos1, const Position& pos2);
+bool operator!=(const Position& pos1, const Position& pos2);

@@ -15,7 +15,7 @@ class Position
         Position(signed long idx, signed long ln, signed long col, std::string fn, std::string ftxt);
         ~Position();
 
-        Position* advance(char current_char);
+        Position* advance(char current_char = '\0');
         Position copy();
     public:
         signed long idx = -1;

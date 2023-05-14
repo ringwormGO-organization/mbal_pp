@@ -53,43 +53,37 @@ std::tuple<std::vector<Token>, Error> Lexer::make_tokens()
 
         else if (this->current_char == '+')
         {
-            tokens.push_back(Token(TT::PLUS));
+            tokens.push_back(Token(TT::PLUS, this->pos));
             this->advance();
         }
 
         else if (this->current_char == '-')
         {
-            tokens.push_back(Token(TT::MINUS));
+            tokens.push_back(Token(TT::MINUS, this->pos));
             this->advance();
         }
 
         else if (this->current_char == '*')
         {
-            tokens.push_back(Token(TT::MUL));
+            tokens.push_back(Token(TT::MUL, this->pos));
             this->advance();
         }
 
         else if (this->current_char == '/')
         {
-            tokens.push_back(Token(TT::DIV));
-            this->advance();
-        }
-
-        else if (this->current_char == '-')
-        {
-            tokens.push_back(Token(TT::MINUS));
+            tokens.push_back(Token(TT::DIV, this->pos));
             this->advance();
         }
 
         else if (this->current_char == '(')
         {
-            tokens.push_back(Token(TT::LPAREN));
+            tokens.push_back(Token(TT::LPAREN, this->pos));
             this->advance();
         }
 
         else if (this->current_char == ')')
         {
-            tokens.push_back(Token(TT::RPAREN));
+            tokens.push_back(Token(TT::RPAREN, this->pos));
             this->advance();
         }
 
@@ -104,6 +98,7 @@ std::tuple<std::vector<Token>, Error> Lexer::make_tokens()
         }
     }
 
+    tokens.push_back(Token(TT::END_OF_FILE, this->pos));
     return std::make_tuple(tokens, NoError());
 }
 
@@ -111,6 +106,7 @@ Token Lexer::make_number()
 {
     std::string num_str = "";
     size_t dot_count = 0;
+    Position pos_start = this->pos.copy();
 
     while (this->current_char != '\0' && ((DIGITS += ".").find(this->current_char) != std::string::npos))
     {
@@ -135,11 +131,11 @@ Token Lexer::make_number()
 
     if (dot_count == 0)
     {
-        return Token(TT::INT, num_str);
+        return Token(TT::INT, pos_start, num_str, this->pos);
     }
 
     else
     {
-        return Token(TT::FLOAT, num_str);
+        return Token(TT::FLOAT, pos_start, num_str, this->pos);
     }
 }

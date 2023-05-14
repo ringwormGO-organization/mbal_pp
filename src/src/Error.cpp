@@ -6,6 +6,12 @@
 
 #include "Error.hpp"
 
+std::string string_with_arrows(std::string text, Position pos_start, Position pos_end)
+{
+    // TODO
+    return text;
+}
+
 Error::Error(Position pos_start, Position pos_end, std::string error_name, std::string details) : pos_start(pos_start), pos_end(pos_end)
 {
     this->pos_start = pos_start;
@@ -17,5 +23,10 @@ Error::Error(Position pos_start, Position pos_end, std::string error_name, std::
 
 std::string Error::as_string()
 {
-    return ((this->error_name += ": ") += this->details) += ((std::string("\nFile") += this->pos_start.fn) += std::string(", line ") += std::to_string(this->pos_start.ln + 1));
+    std::string result = (this->error_name += ": ") += this->details += "\n";
+
+    result += (std::string("File ") += this->pos_start.fn) += (std::string(", line ") += std::to_string(this->pos_start.ln + 1));
+    result += std::string("\n\n ") += string_with_arrows(this->pos_start.ftxt, this->pos_start, this->pos_end);
+
+    return result;
 }

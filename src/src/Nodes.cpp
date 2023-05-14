@@ -16,6 +16,8 @@ std::string NumberNode::repr()
     return tok.repr();
 }
 
+/* ---------------------------------------------------------------------------- */
+
 BinOpNode::BinOpNode(NumberNode left_node, Token op_tok, NumberNode right_node) : left_node(left_node), op_tok(op_tok), right_node(right_node)
 {
     this->left_node = left_node;

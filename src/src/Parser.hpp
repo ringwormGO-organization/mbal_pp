@@ -17,6 +17,24 @@
 
 static Token current_tok = Token(TT::NUL);
 
+static const Token EMPTY_TOKEN_2 = Token(TT::NUL);
+
+class ParseResult
+{
+    public:
+        ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(NumberNode(EMPTY_TOKEN_2)) {};
+        ~ParseResult() {};
+
+        std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> register_result(std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> res);
+
+        ParseResult& success(std::variant<NumberNode, BinOpNode> node);
+        ParseResult& failure(Error error);
+
+    public:
+        Error error;
+        std::variant<NumberNode, BinOpNode> node;
+};
+
 class Parser
 {
     public:
@@ -24,14 +42,14 @@ class Parser
         virtual ~Parser();
 
         Token advance();
-        std::variant<NumberNode, BinOpNode> parse();
+        ParseResult parse();
 
-        NumberNode factor();
-        std::variant<NumberNode, BinOpNode> term();
-        std::variant<NumberNode, BinOpNode> expr();
+        ParseResult factor();
+        ParseResult term();
+        ParseResult expr();
 
         template <int N>
-        std::variant<NumberNode, BinOpNode> bin_op(std::function<std::variant<NumberNode, BinOpNode>()> func, TT ops[N]);
+        ParseResult bin_op(std::function<ParseResult()> func, TT ops[N]);
 
         std::vector<Token> tokens;
     private:

@@ -6,12 +6,15 @@
 
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
 #include "Position.hpp"
 
 static const Position EMPTY_POSITION = Position(-1, 0, -1, "", "");
+
+std::string string_with_arrows(std::string text, Position pos_start, Position pos_end);
 
 class Error
 {
@@ -32,6 +35,13 @@ class IllegalCharError : public Error
     public:
         IllegalCharError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Illegal Character", details) {};
         ~IllegalCharError() {};
+};
+
+class InvalidSyntaxError : public Error
+{
+    public:
+        InvalidSyntaxError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Invalid Syntax", details) {};
+        ~InvalidSyntaxError() {};
 };
 
 class NoError : public Error

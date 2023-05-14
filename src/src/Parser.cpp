@@ -6,6 +6,35 @@
 
 #include "Parser.hpp"
 
+std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> ParseResult::register_result(std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> res)
+{
+    if (std::holds_alternative<ParseResult>(res))
+    {
+        if (std::get<ParseResult>(res).error.error_name != "")
+        {
+            this->error = std::get<ParseResult>(res).error;
+        }
+
+        return std::get<ParseResult>(res).node;
+    }
+
+    return res;
+}
+
+ParseResult& ParseResult::success(std::variant<NumberNode, BinOpNode> node)
+{
+    this->node = node;
+    return *this;
+}
+
+ParseResult& ParseResult::failure(Error error)
+{
+    this->error = error;
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------- */
+
 Parser::Parser(std::vector<Token> tokens)
 {
     this->tokens = tokens;
@@ -29,60 +58,79 @@ Token Parser::advance()
     return current_tok;
 }
 
-std::variant<NumberNode, BinOpNode> Parser::parse()
+ParseResult Parser::parse()
 {
-    std::variant<NumberNode, BinOpNode> res = this->expr();
+    ParseResult res = this->expr();
+
+    if (res.error.error_name == "" && current_tok.type != TT::END_OF_FILE)
+    {
+        return res.failure (
+            InvalidSyntaxError (
+                current_tok.pos_start, current_tok.pos_end,
+                "Expected '+', '-', '*'or '/'"
+            )
+        );
+    }
+
     return res;
 }
 
-NumberNode Parser::factor()
+ParseResult Parser::factor()
 {
+    ParseResult res = ParseResult();
     Token tok = current_tok;
 
     if (tok.type == TT::INT || tok.type == TT::FLOAT)
     {
-        this->advance();
-        return NumberNode(tok);
+        res.register_result(this->advance());
+        return res.success(NumberNode(tok));
     }
+
+    return res.failure(InvalidSyntaxError (
+        tok.pos_start, tok.pos_end,
+        "Expected INT or FLOAT"
+    ));
 }
 
-std::variant<NumberNode, BinOpNode> Parser::term()
+ParseResult Parser::term()
 {
     TT ops[2] {TT::MUL, TT::DIV};
 
-    std::function<std::variant<NumberNode, BinOpNode>()> fac = [this]() { return this->factor(); };
+    std::function<ParseResult()> fac = [this]() { return this->factor(); };
     return this->bin_op<2>(fac, ops);
 }
 
-std::variant<NumberNode, BinOpNode> Parser::expr()
+ParseResult Parser::expr()
 {
     TT ops[2] {TT::PLUS, TT::MINUS};
 
-    std::function<std::variant<NumberNode, BinOpNode>()> fac = [this]() { return this->factor(); };
+    std::function<ParseResult()> fac = [this]() { return this->term(); };
     return this->bin_op<2>(fac, ops);
 }
 
 template <int N>
-std::variant<NumberNode, BinOpNode> Parser::bin_op(std::function<std::variant<NumberNode, BinOpNode>()> func, TT ops[N])
+ParseResult Parser::bin_op(std::function<ParseResult()> func, TT ops[N])
 {
-    std::variant<NumberNode, BinOpNode> left = std::get<NumberNode>(func());
-    
-    while (this->contains<2>(current_tok.type, ops))
+    ParseResult res = ParseResult();
+    auto left = res.register_result(func());
+
+    if (res.error.error_name != "") return res;
+    while (this->contains<N>(current_tok.type, ops))
     {
         Token op_tok = current_tok;
-        this->advance();
+        res.register_result(this->advance());
 
-        NumberNode right = std::get<NumberNode>(func());
-        left = BinOpNode(std::get<NumberNode>(left), op_tok, right);
+        auto right = res.register_result(func());
+        if (res.error.error_name != "") return res;
+
+        left = BinOpNode (
+            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode>>(left)),
+            op_tok, 
+            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode>>(right))
+        );
     }
 
-    /*std::cout << std::boolalpha
-              << "NumberNode? "
-              << std::holds_alternative<NumberNode>(left) << '\n'
-              << "BinOpNode? "
-              << std::holds_alternative<BinOpNode>(left) << '\n';*/
-
-    return left;
+    return res.success(std::get<2>(left));
 }
 
 template <int N>
