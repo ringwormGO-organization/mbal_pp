@@ -7,8 +7,8 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "Token.hpp"
@@ -37,4 +37,17 @@ class BinOpNode
         NumberNode left_node;
         Token op_tok;
         NumberNode right_node;
+};
+
+class UnaryOpNode
+{
+    public:
+        UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode, BinOpNode> node);
+        ~UnaryOpNode();
+
+        std::string repr();
+
+    private:
+        Token op_tok;
+        std::variant<std::monostate, NumberNode, BinOpNode> node;
 };

@@ -29,3 +29,20 @@ std::string BinOpNode::repr()
 {
     return "TODO";
 }
+
+/* ---------------------------------------------------------------------------- */
+
+UnaryOpNode::UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode, BinOpNode> node) : op_tok(op_tok), node(std::move(node))
+{
+    this->op_tok = op_tok;
+}
+
+UnaryOpNode::~UnaryOpNode()
+{
+
+}
+
+std::string repr()
+{
+
+}

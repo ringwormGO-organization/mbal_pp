@@ -15,6 +15,8 @@
 #include "Token.hpp"
 #include "Nodes.hpp"
 
+#define PARSE_REGISTER_TYPES std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode, UnaryOpNode>>
+
 static Token current_tok = Token(TT::NUL);
 
 static const Token EMPTY_TOKEN_2 = Token(TT::NUL);
@@ -25,14 +27,14 @@ class ParseResult
         ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(NumberNode(EMPTY_TOKEN_2)) {};
         ~ParseResult() {};
 
-        std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> register_result(std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> res);
+        PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
 
-        ParseResult& success(std::variant<NumberNode, BinOpNode> node);
+        ParseResult& success(std::variant<NumberNode, BinOpNode, UnaryOpNode> node);
         ParseResult& failure(Error error);
 
     public:
         Error error;
-        std::variant<NumberNode, BinOpNode> node;
+        std::variant<NumberNode, BinOpNode, UnaryOpNode> node;
 };
 
 class Parser
@@ -53,8 +55,11 @@ class Parser
 
         std::vector<Token> tokens;
     private:
-        size_t tok_idx = 1;
+        signed long tok_idx = -1;
 
         template <int N>
         bool contains(TT current, TT ops[N]);
 };
+
+std::variant<std::monostate, NumberNode, BinOpNode> GetSubset(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin);
+std::variant<std::monostate, NumberNode, BinOpNode> GetSubset2(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin);

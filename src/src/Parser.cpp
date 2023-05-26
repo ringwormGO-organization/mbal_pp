@@ -6,7 +6,35 @@
 
 #include "Parser.hpp"
 
-std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> ParseResult::register_result(std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> res)
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
+template < typename CHECK_ME >
+concept IS_WANTED = std::is_same_v<CHECK_ME, NumberNode> || std::is_same_v<CHECK_ME, BinOpNode>;  
+
+std::variant<std::monostate, NumberNode, BinOpNode> GetSubset(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin)
+{
+    return std::visit( overloaded
+        {
+            []( const NumberNode& x ){ return std::variant<std::monostate, NumberNode, BinOpNode>{x};},
+            []( const BinOpNode& x ){ return std::variant<std::monostate, NumberNode, BinOpNode>{x};},
+            []( auto&  ) { return std::variant<std::monostate, NumberNode, BinOpNode>{};}
+        }, vin 
+    );
+}
+
+std::variant<std::monostate, NumberNode, BinOpNode> GetSubset2(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin)
+{
+    return std::visit( overloaded
+        {
+            [] < IS_WANTED TYPE >( const TYPE& x ){ return std::variant<std::monostate, NumberNode, BinOpNode>{x};},
+            []( auto&  ) { return std::variant<std::monostate, NumberNode, BinOpNode>{};}
+        }, vin 
+    );
+}
+
+/* ---------------------------------------------------------------------------- */
+
+PARSE_REGISTER_TYPES ParseResult::register_result(PARSE_REGISTER_TYPES res)
 {
     if (std::holds_alternative<ParseResult>(res))
     {
@@ -21,7 +49,7 @@ std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode>> ParseResul
     return res;
 }
 
-ParseResult& ParseResult::success(std::variant<NumberNode, BinOpNode> node)
+ParseResult& ParseResult::success(std::variant<NumberNode, BinOpNode, UnaryOpNode> node)
 {
     this->node = node;
     return *this;
@@ -80,13 +108,51 @@ ParseResult Parser::factor()
     ParseResult res = ParseResult();
     Token tok = current_tok;
 
-    if (tok.type == TT::INT || tok.type == TT::FLOAT)
+    if (tok.type == TT::PLUS || tok.type == TT::MINUS)
+    {
+        res.register_result(this->advance());
+        auto factor = res.register_result(this->factor());
+
+        if (res.error.error_name != "")
+        {
+            return res;
+        }
+
+        return res.success(UnaryOpNode(tok, GetSubset(std::get<2>(factor))));
+    }
+
+    else if (tok.type == TT::INT || tok.type == TT::FLOAT)
     {
         res.register_result(this->advance());
         return res.success(NumberNode(tok));
     }
 
-    return res.failure(InvalidSyntaxError (
+    else if (tok.type == TT::LPAREN)
+    {
+        res.register_result(this->advance());
+        auto expr = res.register_result(this->expr());
+
+        if (res.error.error_name != "")
+        {
+            return res;
+        }
+
+        if (current_tok.type == TT::RPAREN)
+        {
+            res.register_result(this->advance());
+            return res.success(std::get<2>(expr));
+        }
+
+        else
+        {
+            return res.failure(InvalidSyntaxError(
+                current_tok.pos_start, current_tok.pos_end,
+                "Expected ')'"
+            ));
+        }
+    }
+
+    return res.failure(InvalidSyntaxError(
         tok.pos_start, tok.pos_end,
         "Expected INT or FLOAT"
     ));
@@ -124,9 +190,9 @@ ParseResult Parser::bin_op(std::function<ParseResult()> func, TT ops[N])
         if (res.error.error_name != "") return res;
 
         left = BinOpNode (
-            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode>>(left)),
+            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode, UnaryOpNode>>(left)),
             op_tok, 
-            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode>>(right))
+            std::get<NumberNode>(std::get<std::variant<NumberNode, BinOpNode, UnaryOpNode>>(right))
         );
     }
 

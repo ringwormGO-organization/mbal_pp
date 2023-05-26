@@ -17,7 +17,7 @@
 #include "src/Parser.hpp"
 #include "src/Token.hpp"
 
-std::tuple<std::variant<NumberNode, BinOpNode>, Error> run(std::string fn, std::string text)
+std::tuple<Parser, std::variant<NumberNode, BinOpNode, UnaryOpNode>, Error> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
@@ -25,14 +25,14 @@ std::tuple<std::variant<NumberNode, BinOpNode>, Error> run(std::string fn, std::
 
     if (std::get<1>(result).error_name.size() > 0)
     {
-        return {EMPTY_NODE , std::get<1>(result) };
+        return {EMPTY_PARSER, EMPTY_NODE , std::get<1>(result) };
     }
 
     /* Generate AST */
     Parser parser(std::get<0>(result));
     ParseResult ast = parser.parse();
 
-    return { ast.node, ast.error };
+    return { parser, ast.node, ast.error };
 }
 
 int main()
@@ -49,16 +49,25 @@ int main()
             exit(0);
         }
 
-        std::tuple<std::variant<NumberNode, BinOpNode>, Error> result = run("<stdin>", input);
+        std::tuple<Parser, std::variant<NumberNode, BinOpNode, UnaryOpNode>, Error> result = run("<stdin>", input);
 
-        if (std::get<1>(result).error_name.size() > 0)
+        if (std::get<Error>(result).error_name.size() > 0)
         {
-            std::cout << std::get<1>(result).as_string() << '\n';
+            std::cout << std::get<Error>(result).as_string() << '\n';
         }
 
         else
         {
-            std::cout << "ok!";
+            for (size_t i = 0; i < (std::get<Parser>(result).tokens.size() - 1); i++)
+            {
+                std::cout << std::get<Parser>(result).tokens.at(i).repr();
+            }
+
+            /*for (auto &&i : std::get<Parser>(result).tokens)
+            {
+                std::cout << i.repr();
+            }*/
+
             std::cout << '\n';
         }
     }
