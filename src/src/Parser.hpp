@@ -24,7 +24,7 @@ static const Token EMPTY_TOKEN_2 = Token(TT::NUL);
 class ParseResult
 {
     public:
-        ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(NumberNode(EMPTY_TOKEN_2)) {};
+        ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(std::move(node)) {};
         ~ParseResult() {};
 
         PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
