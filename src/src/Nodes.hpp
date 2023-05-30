@@ -28,26 +28,26 @@ class NumberNode
 class BinOpNode
 {
     public:
-        BinOpNode(NumberNode left_node, Token op_tok, NumberNode right_node);
+        BinOpNode(std::variant<std::monostate, NumberNode*, BinOpNode*> left_node, Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> right_node);
         ~BinOpNode() {};
 
         std::string repr();
 
     private:
-        NumberNode left_node;
+        std::variant<std::monostate, NumberNode*, BinOpNode*> left_node;
         Token op_tok;
-        NumberNode right_node;
+        std::variant<std::monostate, NumberNode*, BinOpNode*> right_node;
 };
 
 class UnaryOpNode
 {
     public:
-        UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode, BinOpNode> node);
+        UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> node);
         ~UnaryOpNode();
 
         std::string repr();
 
     private:
         Token op_tok;
-        std::variant<std::monostate, NumberNode, BinOpNode> node;
+        std::variant<std::monostate, NumberNode*, BinOpNode*> node;
 };

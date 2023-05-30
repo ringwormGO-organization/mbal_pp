@@ -17,7 +17,7 @@
 #include "src/Parser.hpp"
 #include "src/Token.hpp"
 
-std::tuple<Parser, std::variant<NumberNode, BinOpNode, UnaryOpNode>, Error> run(std::string fn, std::string text)
+std::tuple<Parser, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
@@ -49,7 +49,7 @@ int main()
             exit(0);
         }
 
-        std::tuple<Parser, std::variant<NumberNode, BinOpNode, UnaryOpNode>, Error> result = run("<stdin>", input);
+        std::tuple<Parser, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> result = run("<stdin>", input);
 
         if (std::get<Error>(result).error_name.size() > 0)
         {

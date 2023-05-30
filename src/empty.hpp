@@ -15,7 +15,7 @@
 static const Token EMPTY_TOKEN = Token(TT::NUL);
 static const std::vector<Token> EMPTY_VECTOR;
 
-static const std::variant<NumberNode, BinOpNode, UnaryOpNode> EMPTY_NODE = NumberNode(EMPTY_TOKEN);
+static const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> EMPTY_NODE;
 static const Parser EMPTY_PARSER = Parser(EMPTY_VECTOR);
 
 static const ParseResult EMPTY_PARSE_RESULT = ParseResult();

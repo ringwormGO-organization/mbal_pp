@@ -15,7 +15,7 @@
 #include "Token.hpp"
 #include "Nodes.hpp"
 
-#define PARSE_REGISTER_TYPES std::variant<Token, ParseResult, std::variant<NumberNode, BinOpNode, UnaryOpNode>>
+#define PARSE_REGISTER_TYPES std::variant<Token, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>>
 
 static Token current_tok = Token(TT::NUL);
 
@@ -29,12 +29,12 @@ class ParseResult
 
         PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
 
-        ParseResult& success(std::variant<NumberNode, BinOpNode, UnaryOpNode> node);
+        ParseResult& success(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node);
         ParseResult& failure(Error error);
 
     public:
         Error error;
-        std::variant<NumberNode, BinOpNode, UnaryOpNode> node;
+        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node;
 };
 
 class Parser
@@ -61,5 +61,5 @@ class Parser
         bool contains(TT current, TT ops[N]);
 };
 
-std::variant<std::monostate, NumberNode, BinOpNode> GetSubset(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin);
-std::variant<std::monostate, NumberNode, BinOpNode> GetSubset2(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin);
+std::variant<std::monostate, NumberNode*, BinOpNode*> GetSubset(const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>& vin);
+std::variant<std::monostate, NumberNode*, BinOpNode*> GetSubset2(const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>& vin);
