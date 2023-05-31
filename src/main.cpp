@@ -17,7 +17,7 @@
 #include "src/Parser.hpp"
 #include "src/Token.hpp"
 
-std::tuple<Parser, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> run(std::string fn, std::string text)
+std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
@@ -25,14 +25,14 @@ std::tuple<Parser, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> r
 
     if (std::get<1>(result).error_name.size() > 0)
     {
-        return {EMPTY_PARSER, EMPTY_NODE , std::get<1>(result) };
+        return {EMPTY_PARSER, EMPTY_PARSE_RESULT, EMPTY_NODE , std::get<1>(result) };
     }
 
     /* Generate AST */
     Parser parser(std::get<0>(result));
     ParseResult ast = parser.parse();
 
-    return { parser, ast.node, ast.error };
+    return { parser, ast, ast.node, ast.error };
 }
 
 int main()
@@ -49,7 +49,7 @@ int main()
             exit(0);
         }
 
-        std::tuple<Parser, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> result = run("<stdin>", input);
+        std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> result = run("<stdin>", input);
 
         if (std::get<Error>(result).error_name.size() > 0)
         {
@@ -69,6 +69,11 @@ int main()
             }*/
 
             std::cout << '\n';
+
+            auto delete_node = [](auto ptr) {
+                delete ptr;
+            };
+            std::visit(delete_node, std::get<1>(result).node);
         }
     }
 
