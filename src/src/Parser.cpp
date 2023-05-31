@@ -34,6 +34,20 @@ std::variant<std::monostate, NumberNode, BinOpNode> GetSubset2(const std::varian
 
 /* ---------------------------------------------------------------------------- */
 
+ParseResult::ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(std::move(node))
+{
+
+}
+
+ParseResult::~ParseResult()
+{
+    auto delete_node = [](auto ptr) {
+        delete ptr;
+    };
+
+    std::visit(delete_node, this->node);
+}
+
 PARSE_REGISTER_TYPES ParseResult::register_result(PARSE_REGISTER_TYPES res)
 {
     if (std::holds_alternative<ParseResult>(res))
