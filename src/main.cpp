@@ -12,6 +12,7 @@
 #include "empty.hpp"
 
 #include "src/Error.hpp"
+#include "src/Interpreter.hpp"
 #include "src/Lexer.hpp"
 #include "src/Nodes.hpp"
 #include "src/Parser.hpp"
@@ -31,6 +32,15 @@ std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNod
     /* Generate AST */
     Parser parser(std::get<0>(result));
     ParseResult ast = parser.parse();
+
+    if (ast.error.error_name != "")
+    {
+        return { EMPTY_PARSER, EMPTY_PARSE_RESULT, EMPTY_NODE, ast.error };
+    }
+
+    /* Run program */
+    Interpreter interpreter;
+    interpreter.visit(ast.node, Context());
 
     return { parser, ast, ast.node, ast.error };
 }

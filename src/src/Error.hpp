@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <exception>
 #include <iostream>
 #include <string>
 
@@ -34,19 +35,26 @@ class IllegalCharError : public Error
 {
     public:
         IllegalCharError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Illegal Character", details) {};
-        ~IllegalCharError() {};
 };
 
 class InvalidSyntaxError : public Error
 {
     public:
         InvalidSyntaxError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Invalid Syntax", details) {};
-        ~InvalidSyntaxError() {};
 };
 
 class NoError : public Error
 {
     public:
         NoError() : Error(EMPTY_POSITION, EMPTY_POSITION, "", "") {};
-        ~NoError() {};
+};
+
+/* ---------------------------------------------------------------------------- */
+
+class InterpreterWrongType : public std::exception
+{
+    public:
+        InterpreterWrongType() noexcept = default;
+
+        const char* what() const noexcept override { return "[InterpreterWrongType] Wrong type in `node` variable"; }
 };
