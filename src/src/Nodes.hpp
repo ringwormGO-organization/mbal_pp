@@ -12,7 +12,11 @@
 #include <vector>
 
 #include "Token.hpp"
-    
+
+class NumberNode;
+class BinOpNode;
+class UnaryOpNode;
+
 class NumberNode
 {
     public:
@@ -28,26 +32,26 @@ class NumberNode
 class BinOpNode
 {
     public:
-        BinOpNode(std::variant<std::monostate, NumberNode*, BinOpNode*> left_node, Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> right_node);
+        BinOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node, Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node);
         ~BinOpNode() {};
 
         std::string repr();
 
-    private:
-        std::variant<std::monostate, NumberNode*, BinOpNode*> left_node;
+    public:
+        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node;
         Token op_tok;
-        std::variant<std::monostate, NumberNode*, BinOpNode*> right_node;
+        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node;
 };
 
 class UnaryOpNode
 {
     public:
-        UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> node);
+        UnaryOpNode(Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node);
         ~UnaryOpNode();
 
         std::string repr();
 
-    private:
+    public:
         Token op_tok;
-        std::variant<std::monostate, NumberNode*, BinOpNode*> node;
+        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node;
 };

@@ -61,6 +61,3 @@ class Parser
         template <int N>
         bool contains(TT current, TT ops[N]);
 };
-
-std::variant<std::monostate, NumberNode*, BinOpNode*> GetSubset(const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>& vin);
-std::variant<std::monostate, NumberNode*, BinOpNode*> GetSubset2(const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>& vin);

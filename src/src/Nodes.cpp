@@ -18,7 +18,7 @@ std::string NumberNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-BinOpNode::BinOpNode(std::variant<std::monostate, NumberNode*, BinOpNode*> left_node, Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> right_node) : op_tok(op_tok)
+BinOpNode::BinOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node, Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node) : op_tok(op_tok)
 {
     this->left_node = left_node;
     this->op_tok = op_tok;
@@ -32,9 +32,10 @@ std::string BinOpNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-UnaryOpNode::UnaryOpNode(Token op_tok, std::variant<std::monostate, NumberNode*, BinOpNode*> node) : op_tok(op_tok), node(std::move(node))
+UnaryOpNode::UnaryOpNode(Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node) : op_tok(op_tok), node(std::move(node))
 {
     this->op_tok = op_tok;
+    this->node = node;
 }
 
 UnaryOpNode::~UnaryOpNode()

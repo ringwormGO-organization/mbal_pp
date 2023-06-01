@@ -6,34 +6,6 @@
 
 #include "Parser.hpp"
 
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-
-template < typename CHECK_ME >
-concept IS_WANTED = std::is_same_v<CHECK_ME, NumberNode*> || std::is_same_v<CHECK_ME, BinOpNode*>;  
-
-std::variant<std::monostate, NumberNode*, BinOpNode*> GetSubset(const std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>& vin)
-{
-    return std::visit(overloaded
-        {
-            [](NumberNode* x) { return std::variant<std::monostate, NumberNode*, BinOpNode*>{x}; },
-            [](BinOpNode* x) { return std::variant<std::monostate, NumberNode*, BinOpNode*>{x}; },
-            [](auto&) { return std::variant<std::monostate, NumberNode*, BinOpNode*>{}; }
-        }, vin
-    );
-}
-
-std::variant<std::monostate, NumberNode, BinOpNode> GetSubset2(const std::variant<NumberNode, BinOpNode, UnaryOpNode>& vin)
-{
-    return std::visit( overloaded
-        {
-            [] < IS_WANTED TYPE >( const TYPE& x ){ return std::variant<std::monostate, NumberNode, BinOpNode>{x};},
-            []( auto&  ) { return std::variant<std::monostate, NumberNode, BinOpNode>{};}
-        }, vin 
-    );
-}
-
-/* ---------------------------------------------------------------------------- */
-
 PARSE_REGISTER_TYPES ParseResult::register_result(PARSE_REGISTER_TYPES res)
 {
     if (std::holds_alternative<ParseResult>(res))
@@ -118,7 +90,7 @@ ParseResult Parser::factor()
             return res;
         }
 
-        return res.success(new UnaryOpNode(tok, GetSubset(std::get<2>(factor))));
+        return res.success(new UnaryOpNode(tok, std::get<2>(factor)));
     }
 
     else if (tok.type == TT::INT || tok.type == TT::FLOAT)
@@ -190,9 +162,9 @@ ParseResult Parser::bin_op(std::function<ParseResult()> func, TT ops[N])
         if (res.error.error_name != "") return res;
 
         left = new BinOpNode (
-            GetSubset(std::get<2>(left)),
+            std::get<2>(left),
             op_tok,
-            GetSubset(std::get<2>(right))
+            std::get<2>(right)
         );
     }
 

@@ -70,9 +70,21 @@ void Interpreter::visit_NumberNode(std::variant<NumberNode*, BinOpNode*, UnaryOp
 void Interpreter::visit_BinaryOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context)
 {
     std::cout << "Found binary node!\n";
+    this->visit(
+        std::get<1>(node)->left_node,
+        context
+    );
+    this->visit(
+        std::get<1>(node)->right_node,
+        context
+    );
 }
 
 void Interpreter::visit_UnaryOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context)
 {
     std::cout << "Found unary op node!\n";
+    this->visit(
+        std::get<2>(node)->node,
+        context
+    );
 }
