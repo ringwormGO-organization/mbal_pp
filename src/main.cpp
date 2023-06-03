@@ -5,8 +5,8 @@
 */
 
 #include <iostream>
+#include <memory>
 #include <string>
-#include <tuple>
 #include <variant>
 
 #include "empty.hpp"
@@ -18,7 +18,7 @@
 #include "src/Parser.hpp"
 #include "src/Token.hpp"
 
-std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> run(std::string fn, std::string text)
+std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
@@ -26,23 +26,23 @@ std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNod
 
     if (std::get<1>(result).error_name.size() > 0)
     {
-        return {EMPTY_PARSER, EMPTY_PARSE_RESULT, EMPTY_NODE , std::get<1>(result) };
+        return std::get<1>(result);
     }
 
     /* Generate AST */
     Parser parser(std::get<0>(result));
-    ParseResult ast = parser.parse();
+    std::shared_ptr<ParseResult> ast = parser.parse();
 
-    if (ast.error.error_name != "")
+    if (ast->error.error_name != "")
     {
-        return { EMPTY_PARSER, EMPTY_PARSE_RESULT, EMPTY_NODE, ast.error };
+        return ast->error;
     }
 
     /* Run program */
     Interpreter interpreter;
-    interpreter.visit(ast.node, Context());
+    std::shared_ptr<Number> interpreter_result = interpreter.visit(ast.get()->node, Context());
 
-    return { parser, ast, ast.node, ast.error };
+    return interpreter_result;
 }
 
 int main()
@@ -59,31 +59,17 @@ int main()
             exit(0);
         }
 
-        std::tuple<Parser, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>, Error> result = run("<stdin>", input);
+        std::variant<std::shared_ptr<Number>, Error> result = run("<stdin>", input);
 
-        if (std::get<Error>(result).error_name.size() > 0)
+        if (std::holds_alternative<Error>(result))
         {
-            std::cout << std::get<Error>(result).as_string() << '\n';
+            std::cout << std::get<1>(result).as_string() << '\n';
         }
 
         else
         {
-            for (size_t i = 0; i < (std::get<Parser>(result).tokens.size() - 1); i++)
-            {
-                std::cout << std::get<Parser>(result).tokens.at(i).repr();
-            }
-
-            /*for (auto &&i : std::get<Parser>(result).tokens)
-            {
-                std::cout << i.repr();
-            }*/
-
+            std::cout << std::get<0>(result).get()->repr();
             std::cout << '\n';
-
-            auto delete_node = [](auto ptr) {
-                delete ptr;
-            };
-            std::visit(delete_node, std::get<1>(result).node);
         }
     }
 

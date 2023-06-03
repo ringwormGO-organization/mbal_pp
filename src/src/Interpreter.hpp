@@ -7,13 +7,16 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
-#include <type_traits>
 #include <variant>
 
 #include "Context.hpp"
 #include "Error.hpp"
 #include "Nodes.hpp"
+#include "Values.hpp"
+
+#include "define.hpp"
 
 class Interpreter
 {
@@ -21,9 +24,9 @@ class Interpreter
         Interpreter(/* args */);
         ~Interpreter();
 
-        void visit(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context);
+        std::shared_ptr<Number> visit(ALL_VARIANT node, Context context);
 
-        void visit_NumberNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context);
-        void visit_BinaryOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context);
-        void visit_UnaryOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node, Context context);
+        std::shared_ptr<Number> visit_NumberNode(ALL_VARIANT node, Context context);
+        std::shared_ptr<Number> visit_BinaryOpNode(ALL_VARIANT node, Context context);
+        std::shared_ptr<Number> visit_UnaryOpNode(ALL_VARIANT node, Context context);
 };

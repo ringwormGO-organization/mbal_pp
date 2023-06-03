@@ -7,11 +7,14 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
 
 #include "Token.hpp"
+
+#include "define.hpp"
 
 class NumberNode;
 class BinOpNode;
@@ -27,31 +30,40 @@ class NumberNode
 
     public:
         Token tok;
+
+        Position pos_start;
+        Position pos_end;
 };
 
 class BinOpNode
 {
     public:
-        BinOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node, Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node);
+        BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node);
         ~BinOpNode() {};
 
         std::string repr();
 
     public:
-        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node;
+        ALL_VARIANT left_node;
         Token op_tok;
-        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node;
+        ALL_VARIANT right_node;
+
+        Position pos_start;
+        Position pos_end;
 };
 
 class UnaryOpNode
 {
     public:
-        UnaryOpNode(Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node);
+        UnaryOpNode(Token op_tok, ALL_VARIANT node);
         ~UnaryOpNode();
 
         std::string repr();
 
     public:
         Token op_tok;
-        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node;
+        ALL_VARIANT node;
+
+        Position pos_start;
+        Position pos_end;
 };
