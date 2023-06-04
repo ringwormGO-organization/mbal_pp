@@ -62,14 +62,8 @@ std::shared_ptr<Number> Interpreter::visit(ALL_VARIANT node, Context context)
 
 std::shared_ptr<Number> Interpreter::visit_NumberNode(ALL_VARIANT node, Context context)
 {
-    /*return Number (
-        std::stol(std::get<0>(node)->tok.value)
-    ).set_pos (
-        std::get<0>(node)->pos_start, std::get<0>(node)->pos_end
-    );*/
-
-    Number number(std::stol(std::get<0>(node)->tok.value));
-    return number.set_pos(std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
+    std::shared_ptr<Number> number = std::make_shared<Number>(std::stol(std::get<0>(node)->tok.value));
+    return number->set_pos(std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
 }
 
 std::shared_ptr<Number> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, Context context)

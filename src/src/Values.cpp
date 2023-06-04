@@ -6,7 +6,7 @@
 
 #include "Values.hpp"
 
-Number::Number(signed long value) : pos_start(pos_start), pos_end(pos_end)
+Number::Number(signed long value) : pos_start(EMPTY_POSITION), pos_end(EMPTY_POSITION)
 {
     this->value = value;
     this->set_pos();
@@ -34,7 +34,7 @@ std::shared_ptr<Number> Number::added_to(std::variant<std::shared_ptr<Number>, P
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(Number(this->value + std::get<0>(other).get()->value));
+        return std::make_shared<Number>(this->value + std::get<0>(other).get()->value);
     }
 }
 
@@ -42,7 +42,7 @@ std::shared_ptr<Number> Number::subbed_by(std::variant<std::shared_ptr<Number>, 
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(Number(this->value - std::get<0>(other).get()->value));
+        return std::make_shared<Number>(this->value - std::get<0>(other).get()->value);
     }
 }
 
@@ -50,7 +50,7 @@ std::shared_ptr<Number> Number::multed_by(std::variant<std::shared_ptr<Number>, 
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(Number(this->value * std::get<0>(other).get()->value));
+        return std::make_shared<Number>(this->value * std::get<0>(other).get()->value);
     }
 }
 
@@ -58,6 +58,6 @@ std::shared_ptr<Number> Number::dived_by(std::variant<std::shared_ptr<Number>, P
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(Number(this->value / std::get<0>(other).get()->value));
+        return std::make_shared<Number>(this->value / std::get<0>(other).get()->value);
     }
 }
