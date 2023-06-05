@@ -68,7 +68,7 @@ int main()
 
         else
         {
-            std::cout << std::get<0>(result).get()->repr();
+            std::cout << std::get<0>(result)->repr();
             std::cout << '\n';
         }
     }

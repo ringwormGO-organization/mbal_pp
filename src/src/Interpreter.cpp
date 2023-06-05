@@ -62,58 +62,64 @@ std::shared_ptr<Number> Interpreter::visit(ALL_VARIANT node, Context context)
 
 std::shared_ptr<Number> Interpreter::visit_NumberNode(ALL_VARIANT node, Context context)
 {
-    std::shared_ptr<Number> number = std::make_shared<Number>(std::stol(std::get<0>(node)->tok.value));
-    return number->set_pos(std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
+    Number number(std::stol(std::get<0>(node)->tok.value), std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
+    return std::make_shared<Number>(number);
 }
 
 std::shared_ptr<Number> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, Context context)
 {
-    std::shared_ptr<Number> left = this->visit(std::get<1>(node).get()->left_node, context);
-    std::shared_ptr<Number> right = this->visit(std::get<1>(node).get()->right_node, context);
+    std::shared_ptr<Number> left = this->visit(std::get<1>(node)->left_node, context);
+    std::shared_ptr<Number> right = this->visit(std::get<1>(node)->right_node, context);
 
-    if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(node))
+    if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
     {
         std::shared_ptr<Number> result;
-        if (std::get<2>(node).get()->op_tok.type == TT::PLUS)
+        if (std::get<1>(node)->op_tok.type == TT::PLUS)
         {
-            result = left.get()->added_to(right);
+            result = left->added_to(right);
         }
 
-        else if (std::get<2>(node).get()->op_tok.type == TT::MINUS)
+        else if (std::get<1>(node)->op_tok.type == TT::MINUS)
         {
-            result = left.get()->subbed_by(right);
+            result = left->subbed_by(right);
         }
 
-        else if (std::get<2>(node).get()->op_tok.type == TT::MUL)
+        else if (std::get<1>(node)->op_tok.type == TT::MUL)
         {
-            result = left.get()->multed_by(right);
+            result = left->multed_by(right);
         }
 
-        else if (std::get<2>(node).get()->op_tok.type == TT::DIV)
+        else if (std::get<1>(node)->op_tok.type == TT::DIV)
         {
-            result = left.get()->dived_by(right);
+            result = left->dived_by(right);
         }
 
         else
         {
-
+            // Handle other cases if necessary
         }
 
-        return result.get()->set_pos(std::get<2>(node).get()->pos_start, std::get<2>(node).get()->pos_end);
+        result->pos_start = std::get<1>(node)->pos_start;
+        result->pos_end = std::get<1>(node)->pos_end;
+
+        return result;
     }
 }
 
 std::shared_ptr<Number> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, Context context)
 {
-    std::shared_ptr<Number> number = this->visit(std::get<2>(node).get()->node, context);
+    std::shared_ptr<Number> number = this->visit(std::get<2>(node)->node, context);
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(node))
     {
-        if (std::get<2>(node).get()->op_tok.type == TT::MINUS)
+        if (std::get<2>(node)->op_tok.type == TT::MINUS)
         {
-            number = number.get()->multed_by(std::make_shared<Number>(-1));
+            number = number->multed_by(std::make_shared<Number>(-1));
         }
 
-        return number.get()->set_pos(std::get<2>(node).get()->pos_start, std::get<2>(node).get()->pos_end);
+        number->pos_start = std::get<2>(node)->pos_start;
+        number->pos_end = std::get<2>(node)->pos_end;
+
+        return number;
     }
 }

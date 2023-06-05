@@ -6,10 +6,12 @@
 
 #include "Values.hpp"
 
-Number::Number(signed long value) : pos_start(EMPTY_POSITION), pos_end(EMPTY_POSITION)
+Number::Number(signed long value, Position pos_start, Position pos_end) : value(value), pos_start(pos_start), pos_end(pos_end)
 {
     this->value = value;
-    this->set_pos();
+
+    this->pos_start = pos_start;
+    this->pos_end = pos_end;
 }
 
 Number::~Number()
@@ -20,14 +22,6 @@ Number::~Number()
 std::string Number::repr()
 {
     return std::to_string(this->value);
-}
-
-std::shared_ptr<Number> Number::set_pos(Position pos_start, Position pos_end)
-{
-    this->pos_start = pos_start;
-    this->pos_end = pos_end;
-
-    return std::shared_ptr<Number>(shared_from_this());
 }
 
 std::shared_ptr<Number> Number::added_to(std::variant<std::shared_ptr<Number>, ParseResult> other)
