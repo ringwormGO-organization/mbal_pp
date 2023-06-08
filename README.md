@@ -7,7 +7,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 ### From Code Pulse's tutorial
 - [x] EP 1 - Lexer
 - [x] EP 2 - Parser
-- [ ] EP 3 - Intepreter
+- [x] EP 3 - Intepreter
 - [ ] EP 4 - Variables
 - [ ] EP 5 - Comparasions and logical operators
 - [ ] EP 6 - IF statment
@@ -30,4 +30,9 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [ ] Self hosted
 
 ### FIX-NOW
-- [ ] fix string with arrows
+- [ ] fix `string with arrows()` function
+
+## Credits
+- [ChatGPT](ai.com)
+- [Tom Weiland Discord server](https://discord.gg/tomweiland)
+- [Stack Overflow](https://stackoverflow.com/)
