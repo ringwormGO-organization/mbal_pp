@@ -7,13 +7,19 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
+
+#include "Position.hpp"
 
 class Context
 {
-private:
-    /* data */
-public:
-    Context(/* args */);
-    ~Context();
+    public:
+        Context(std::string display_name, std::shared_ptr<Context> parent=nullptr, Position parent_entry_pos=Position(-1, 0, -1, "", ""));
+        ~Context();
+
+    public:
+        std::string display_name;
+        std::shared_ptr<Context> parent;
+        Position parent_entry_pos;
 };

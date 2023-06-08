@@ -34,7 +34,7 @@ void Lexer::advance()
     }
 }
 
-std::tuple<std::vector<Token>, Error> Lexer::make_tokens()
+std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
 {
     std::vector<Token> tokens;
     std::vector<Token> empty_vector;
@@ -94,12 +94,12 @@ std::tuple<std::vector<Token>, Error> Lexer::make_tokens()
             char ch = this->current_char;
             this->advance();
 
-            return std::make_tuple(empty_vector, IllegalCharError(pos_start, this->pos, (std::string("'") += std::to_string(ch)) += "'"));
+            return std::make_tuple(empty_vector, std::make_shared<IllegalCharError>(pos_start, this->pos, (std::string("'") += std::to_string(ch)) += "'"));
         }
     }
 
     tokens.push_back(Token(TT::END_OF_FILE, this->pos));
-    return std::make_tuple(tokens, NoError());
+    return std::make_tuple(tokens, std::make_shared<NoError>());
 }
 
 Token Lexer::make_number()

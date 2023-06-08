@@ -28,3 +28,6 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 ### Our thing
 - [ ] Generics
 - [ ] Self hosted
+
+### FIX-NOW
+- [ ] fix string with arrows

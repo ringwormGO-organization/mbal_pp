@@ -6,9 +6,12 @@
 
 #include "Nodes.hpp"
 
-NumberNode::NumberNode(Token tok) : tok(tok)
+NumberNode::NumberNode(Token tok) : tok(tok), pos_start(pos_start), pos_end(pos_end)
 {
     this->tok = tok;
+
+    this->pos_start = this->tok.pos_start;
+    this->pos_end = this->tok.pos_end;
 }
 
 std::string NumberNode::repr()
@@ -18,11 +21,21 @@ std::string NumberNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-BinOpNode::BinOpNode(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> left_node, Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> right_node) : op_tok(op_tok)
+BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok), pos_start(pos_start), pos_end(pos_end)
 {
     this->left_node = left_node;
     this->op_tok = op_tok;
     this->right_node = right_node;
+
+    if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->left_node))
+    {
+        this->pos_start = std::get<2>(this->left_node).get()->pos_start;
+    }
+
+    if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->right_node))
+    {
+        this->pos_end = std::get<2>(this->right_node).get()->pos_start;
+    }
 }
 
 std::string BinOpNode::repr()
@@ -32,10 +45,13 @@ std::string BinOpNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-UnaryOpNode::UnaryOpNode(Token op_tok, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node) : op_tok(op_tok), node(std::move(node))
+UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok), pos_start(pos_start), pos_end(pos_end)
 {
     this->op_tok = op_tok;
     this->node = node;
+
+    this->pos_start = this->op_tok.pos_start;
+    this->pos_end = this->op_tok.pos_end;
 }
 
 UnaryOpNode::~UnaryOpNode()

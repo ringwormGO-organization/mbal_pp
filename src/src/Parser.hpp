@@ -8,7 +8,7 @@
 
 #include <functional>
 #include <iostream>
-/* #include <memory> - this is if I decide to use unique_ptr*/
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
@@ -16,26 +16,28 @@
 #include "Token.hpp"
 #include "Nodes.hpp"
 
-#define PARSE_REGISTER_TYPES std::variant<Token, ParseResult, std::variant<NumberNode*, BinOpNode*, UnaryOpNode*>>
+#include "define.hpp"
+
+#define PARSE_REGISTER_TYPES std::variant<Token, std::shared_ptr<ParseResult>, ALL_VARIANT>
 
 static Token current_tok = Token(TT::NUL);
 
 static const Token EMPTY_TOKEN_2 = Token(TT::NUL);
 
-class ParseResult
+class ParseResult : public std::enable_shared_from_this<ParseResult>
 {
     public:
-        ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node(std::move(node)) {};
-        ~ParseResult() {};
+        ParseResult();
+        ~ParseResult();
 
         PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
 
-        ParseResult& success(std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node);
-        ParseResult& failure(Error error);
+        std::shared_ptr<ParseResult> success(ALL_VARIANT node);
+        std::shared_ptr<ParseResult> failure(std::shared_ptr<Error> error);
 
     public:
-        Error error;
-        std::variant<NumberNode*, BinOpNode*, UnaryOpNode*> node;
+        std::shared_ptr<Error> error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+        ALL_VARIANT node;
 };
 
 class Parser
@@ -45,14 +47,14 @@ class Parser
         virtual ~Parser();
 
         Token advance();
-        ParseResult parse();
+        std::shared_ptr<ParseResult> parse();
 
-        ParseResult factor();
-        ParseResult term();
-        ParseResult expr();
+        std::shared_ptr<ParseResult> factor();
+        std::shared_ptr<ParseResult> term();
+        std::shared_ptr<ParseResult> expr();
 
         template <int N>
-        ParseResult bin_op(std::function<ParseResult()> func, TT ops[N]);
+        std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func, TT ops[N]);
 
         std::vector<Token> tokens;
     private:
