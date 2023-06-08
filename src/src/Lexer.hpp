@@ -7,6 +7,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -22,7 +23,7 @@ class Lexer
         ~Lexer();
 
         void advance();
-        std::tuple<std::vector<Token>, Error> make_tokens();
+        std::tuple<std::vector<Token>, std::shared_ptr<Error>> make_tokens();
         Token make_number();
 
     private:

@@ -18,13 +18,13 @@
 #include "src/Parser.hpp"
 #include "src/Token.hpp"
 
-std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string text)
+std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
-    std::tuple<std::vector<Token>, Error> result = lexer.make_tokens();
+    std::tuple<std::vector<Token>, std::shared_ptr<Error>> result = lexer.make_tokens();
 
-    if (std::get<1>(result).error_name.size() > 0)
+    if (std::get<1>(result)->error_name.size() > 0)
     {
         return std::get<1>(result);
     }
@@ -33,7 +33,7 @@ std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string tex
     Parser parser(std::get<0>(result));
     std::shared_ptr<ParseResult> ast = parser.parse();
 
-    if (ast->error.error_name != "")
+    if (ast->error->error_name != "")
     {
         return ast->error;
     }
@@ -44,7 +44,7 @@ std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string tex
 
     std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, context);
 
-    if (interpreter_result->error.error_name != "")
+    if (interpreter_result->error->error_name != "")
     {
         return interpreter_result->error;
     }
@@ -66,11 +66,11 @@ int main()
             exit(0);
         }
 
-        std::variant<std::shared_ptr<Number>, Error> result = run("<stdin>", input);
+        std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> result = run("<stdin>", input);
 
-        if (std::holds_alternative<Error>(result))
+        if (std::holds_alternative<std::shared_ptr<Error>>(result))
         {
-            std::cout << std::get<1>(result).as_string() << '\n';
+            std::cout << std::get<1>(result)->as_string() << '\n';
         }
 
         else

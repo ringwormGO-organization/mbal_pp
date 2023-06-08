@@ -28,13 +28,13 @@ class Number : public std::enable_shared_from_this<Number>
 
         std::string repr();
 
-        std::tuple<std::shared_ptr<Number>, Error> added_to(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, Error> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, Error> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, Error> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
 
     public:
-        Error error;
+        std::shared_ptr<Error> error;
         signed long value;
 
         Position pos_start;

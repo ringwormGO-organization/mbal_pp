@@ -33,10 +33,10 @@ class ParseResult : public std::enable_shared_from_this<ParseResult>
         PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
 
         std::shared_ptr<ParseResult> success(ALL_VARIANT node);
-        std::shared_ptr<ParseResult> failure(Error error);
+        std::shared_ptr<ParseResult> failure(std::shared_ptr<Error> error);
 
     public:
-        Error error;
+        std::shared_ptr<Error> error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
         ALL_VARIANT node;
 };
 

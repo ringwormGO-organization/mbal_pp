@@ -6,7 +6,7 @@
 
 #include "RTResult.hpp"
 
-RTResult::RTResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", "")
+RTResult::RTResult()
 {
 
 }
@@ -18,7 +18,7 @@ RTResult::~RTResult()
 
 std::shared_ptr<Number> RTResult::register_result(std::shared_ptr<RTResult> res)
 {
-    if (res->error.error_name != "")
+    if (res->error->error_name != "")
     {
         this->error = res->error;
     }
@@ -32,7 +32,7 @@ std::shared_ptr<RTResult> RTResult::success(std::shared_ptr<Number> value)
     return std::shared_ptr<RTResult>(shared_from_this());
 }
 
-std::shared_ptr<RTResult> RTResult::failure(Error error)
+std::shared_ptr<RTResult> RTResult::failure(std::shared_ptr<Error> error)
 {
     this->error = error;
     return std::shared_ptr<RTResult>(shared_from_this());

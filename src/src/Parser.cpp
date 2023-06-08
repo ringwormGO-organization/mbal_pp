@@ -6,7 +6,7 @@
 
 #include "Parser.hpp"
 
-ParseResult::ParseResult() : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), node()
+ParseResult::ParseResult()
 {
 
 }
@@ -20,7 +20,7 @@ PARSE_REGISTER_TYPES ParseResult::register_result(PARSE_REGISTER_TYPES res)
 {
     if (std::holds_alternative<std::shared_ptr<ParseResult>>(res))
     {
-        if (std::get<std::shared_ptr<ParseResult>>(res).get()->error.error_name != "")
+        if (std::get<std::shared_ptr<ParseResult>>(res)->error->error_name != "")
         {
             this->error = std::get<std::shared_ptr<ParseResult>>(res).get()->error;
         }
@@ -37,7 +37,7 @@ std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
     return std::shared_ptr<ParseResult>(shared_from_this());
 }
 
-std::shared_ptr<ParseResult> ParseResult::failure(Error error)
+std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 {
     this->error = error;
     return std::shared_ptr<ParseResult>(shared_from_this());
@@ -72,10 +72,10 @@ std::shared_ptr<ParseResult> Parser::parse()
 {
     std::shared_ptr<ParseResult> res = this->expr();
 
-    if (res.get()->error.error_name == "" && current_tok.type != TT::END_OF_FILE)
+    if (res.get()->error->error_name == "" && current_tok.type != TT::END_OF_FILE)
     {
         return res.get()->failure (
-            InvalidSyntaxError (
+            std::make_shared<InvalidSyntaxError> (
                 current_tok.pos_start, current_tok.pos_end,
                 "Expected '+', '-', '*'or '/'"
             )
@@ -92,10 +92,10 @@ std::shared_ptr<ParseResult> Parser::factor()
 
     if (tok.type == TT::PLUS || tok.type == TT::MINUS)
     {
-        res.get()->register_result(this->advance());
-        auto factor = res.get()->register_result(this->factor());
+        res->register_result(this->advance());
+        auto factor = res->register_result(this->factor());
 
-        if (res.get()->error.error_name != "")
+        if (res->error->error_name != "")
         {
             return res;
         }
@@ -114,7 +114,7 @@ std::shared_ptr<ParseResult> Parser::factor()
         res.get()->register_result(this->advance());
         auto expr = res.get()->register_result(this->expr());
 
-        if (res.get()->error.error_name != "")
+        if (res.get()->error->error_name != "")
         {
             return res;
         }
@@ -127,14 +127,14 @@ std::shared_ptr<ParseResult> Parser::factor()
 
         else
         {
-            return res.get()->failure(InvalidSyntaxError(
+            return res.get()->failure(std::make_shared<InvalidSyntaxError> (
                 current_tok.pos_start, current_tok.pos_end,
                 "Expected ')'"
             ));
         }
     }
 
-    return res.get()->failure(InvalidSyntaxError(
+    return res.get()->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
         "Expected INT or FLOAT"
     ));
@@ -162,14 +162,14 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
     auto left = res.get()->register_result(func());
 
-    if (res.get()->error.error_name != "") return res;
+    if (res.get()->error->error_name != "") return res;
     while (this->contains<N>(current_tok.type, ops))
     {
         Token op_tok = current_tok;
         res.get()->register_result(this->advance());
 
         auto right = res.get()->register_result(func());
-        if (res.get()->error.error_name != "") return res;
+        if (res.get()->error->error_name != "") return res;
 
         left = std::make_shared<BinOpNode> (
             std::get<ALL_VARIANT>(left),

@@ -26,8 +26,8 @@ class Error
         virtual ~Error() {};
 
         virtual std::string as_string();
+
         std::string error_name = "";
-    protected:
         Position pos_start;
         Position pos_end;
         std::string details = "";
@@ -57,11 +57,14 @@ class RTError : public Error
         {
             std::string result = this->generate_traceback();
 
-            result += this->error_name += this->details;
+            result += this->error_name += std::string(": ") += this->details;
             result += std::string("\n\n") += string_with_arrows(this->pos_start.ftxt, this->pos_start, this->pos_end);
 
             return result;
         };
+
+    public:
+        std::shared_ptr<Context> context;
 
     private:
         std::string generate_traceback()
@@ -81,13 +84,13 @@ class RTError : public Error
             return (std::string("Traceback (most recent call last): \n") += result);
         };
 
-        std::shared_ptr<Context> context;
 };
 
 class NoError : public Error
 {
     public:
         NoError() : Error(EMPTY_POSITION, EMPTY_POSITION, "", "") {};
+        std::string as_string() override { return ""; }
 };
 
 /* ---------------------------------------------------------------------------- */
