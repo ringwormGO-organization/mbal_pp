@@ -9,8 +9,10 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <variant>
 
+#include "Error.hpp"
 #include "Nodes.hpp"
 #include "Position.hpp"
 #include "Token.hpp"
@@ -25,14 +27,18 @@ class Number : public std::enable_shared_from_this<Number>
 
         std::string repr();
 
-        std::shared_ptr<Number> added_to(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::shared_ptr<Number> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::shared_ptr<Number> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::shared_ptr<Number> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, Error> added_to(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, Error> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, Error> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, Error> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
 
     public:
+        Error error;
+
         signed long value;
 
         Position pos_start;
         Position pos_end;
 };
+
+static const std::shared_ptr<Number> EMPTY_NUMBER;

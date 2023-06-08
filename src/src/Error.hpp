@@ -43,6 +43,12 @@ class InvalidSyntaxError : public Error
         InvalidSyntaxError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Invalid Syntax", details) {};
 };
 
+class RTError : public Error
+{
+    public:
+        RTError(Position pos_start, Position pos_end, std::string details) : Error(pos_start, pos_end, "Runtime Error", details) {};
+};
+
 class NoError : public Error
 {
     public:

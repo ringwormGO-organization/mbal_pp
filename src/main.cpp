@@ -40,9 +40,14 @@ std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string tex
 
     /* Run program */
     Interpreter interpreter;
-    std::shared_ptr<Number> interpreter_result = interpreter.visit(ast.get()->node, Context());
+    std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, Context());
 
-    return interpreter_result;
+    if (interpreter_result->error.error_name != "")
+    {
+        return interpreter_result->error;
+    }
+
+    return interpreter_result->value;
 }
 
 int main()

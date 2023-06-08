@@ -6,7 +6,7 @@
 
 #include "Values.hpp"
 
-Number::Number(signed long value, Position pos_start, Position pos_end) : value(value), pos_start(pos_start), pos_end(pos_end)
+Number::Number(signed long value, Position pos_start, Position pos_end) : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), pos_start(pos_start), pos_end(pos_end)
 {
     this->value = value;
 
@@ -24,34 +24,42 @@ std::string Number::repr()
     return std::to_string(this->value);
 }
 
-std::shared_ptr<Number> Number::added_to(std::variant<std::shared_ptr<Number>, ParseResult> other)
+std::tuple<std::shared_ptr<Number>, Error> Number::added_to(std::variant<std::shared_ptr<Number>, ParseResult> other)
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(this->value + std::get<0>(other).get()->value);
+        return { std::make_shared<Number>(this->value + std::get<0>(other).get()->value), NoError() };
     }
 }
 
-std::shared_ptr<Number> Number::subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
+std::tuple<std::shared_ptr<Number>, Error> Number::subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(this->value - std::get<0>(other).get()->value);
+        return { std::make_shared<Number>(this->value - std::get<0>(other).get()->value), NoError() };
     }
 }
 
-std::shared_ptr<Number> Number::multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
+std::tuple<std::shared_ptr<Number>, Error> Number::multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(this->value * std::get<0>(other).get()->value);
+        return { std::make_shared<Number>(this->value * std::get<0>(other).get()->value), NoError() };
     }
 }
 
-std::shared_ptr<Number> Number::dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
+std::tuple<std::shared_ptr<Number>, Error> Number::dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return std::make_shared<Number>(this->value / std::get<0>(other).get()->value);
+        if (std::get<0>(other)->value == 0)
+        {
+            return { EMPTY_NUMBER, RTError(
+                std::get<0>(other)->pos_start, std::get<0>(other)->pos_start,
+                "Division by zero"
+            ) };
+        }
+
+        return { std::make_shared<Number>(this->value / std::get<0>(other).get()->value), NoError() };
     }
 }
