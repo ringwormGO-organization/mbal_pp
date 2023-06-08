@@ -40,7 +40,9 @@ std::variant<std::shared_ptr<Number>, Error> run(std::string fn, std::string tex
 
     /* Run program */
     Interpreter interpreter;
-    std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, Context());
+    std::shared_ptr<Context> context = std::make_shared<Context>("<program>");
+
+    std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, context);
 
     if (interpreter_result->error.error_name != "")
     {
@@ -68,6 +70,12 @@ int main()
 
         if (std::holds_alternative<Error>(result))
         {
+            Error& error = std::get<Error>(result);
+            if (RTError* rt_error = dynamic_cast<RTError*>(&error))
+            {
+                std::cout << rt_error->as_string() << '\n';
+            }
+
             std::cout << std::get<1>(result).as_string() << '\n';
         }
 

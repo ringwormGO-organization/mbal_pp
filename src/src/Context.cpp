@@ -6,9 +6,11 @@
 
 #include "Context.hpp"
 
-Context::Context()
+Context::Context(std::string display_name, std::shared_ptr<Context> parent, Position parent_entry_pos) : parent_entry_pos(-1, 0, -1, "", "")
 {
-
+    this->display_name = display_name;
+    this->parent = parent;
+    this->parent_entry_pos = parent_entry_pos;
 }
 
 Context::~Context()

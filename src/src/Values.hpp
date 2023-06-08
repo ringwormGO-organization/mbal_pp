@@ -12,6 +12,7 @@
 #include <tuple>
 #include <variant>
 
+#include "Context.hpp"
 #include "Error.hpp"
 #include "Nodes.hpp"
 #include "Position.hpp"
@@ -22,7 +23,7 @@
 class Number : public std::enable_shared_from_this<Number>
 {
     public:
-        Number(signed long value, Position pos_start = EMPTY_POSITION, Position pos_end = EMPTY_POSITION);
+        Number(signed long value, std::shared_ptr<Context> context=nullptr, Position pos_start = EMPTY_POSITION, Position pos_end = EMPTY_POSITION);
         ~Number();
 
         std::string repr();
@@ -34,11 +35,12 @@ class Number : public std::enable_shared_from_this<Number>
 
     public:
         Error error;
-
         signed long value;
 
         Position pos_start;
         Position pos_end;
+
+        std::shared_ptr<Context> context;
 };
 
 static const std::shared_ptr<Number> EMPTY_NUMBER;

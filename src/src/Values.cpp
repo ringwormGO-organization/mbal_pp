@@ -6,12 +6,14 @@
 
 #include "Values.hpp"
 
-Number::Number(signed long value, Position pos_start, Position pos_end) : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), pos_start(pos_start), pos_end(pos_end)
+Number::Number(signed long value, std::shared_ptr<Context> context, Position pos_start, Position pos_end) : error(EMPTY_POSITION, EMPTY_POSITION, "", ""), pos_start(pos_start), pos_end(pos_end)
 {
     this->value = value;
 
     this->pos_start = pos_start;
     this->pos_end = pos_end;
+
+    this->context = context;
 }
 
 Number::~Number()
@@ -36,7 +38,7 @@ std::tuple<std::shared_ptr<Number>, Error> Number::subbed_by(std::variant<std::s
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return { std::make_shared<Number>(this->value - std::get<0>(other).get()->value), NoError() };
+        return { std::make_shared<Number>(this->value - std::get<0>(other).get()->value, this->context), NoError() };
     }
 }
 
@@ -44,7 +46,7 @@ std::tuple<std::shared_ptr<Number>, Error> Number::multed_by(std::variant<std::s
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return { std::make_shared<Number>(this->value * std::get<0>(other).get()->value), NoError() };
+        return { std::make_shared<Number>(this->value * std::get<0>(other).get()->value, this->context), NoError() };
     }
 }
 
@@ -56,10 +58,11 @@ std::tuple<std::shared_ptr<Number>, Error> Number::dived_by(std::variant<std::sh
         {
             return { EMPTY_NUMBER, RTError(
                 std::get<0>(other)->pos_start, std::get<0>(other)->pos_start,
-                "Division by zero"
+                "Division by zero",
+                this->context
             ) };
         }
 
-        return { std::make_shared<Number>(this->value / std::get<0>(other).get()->value), NoError() };
+        return { std::make_shared<Number>(this->value / std::get<0>(other).get()->value, this->context), NoError() };
     }
 }

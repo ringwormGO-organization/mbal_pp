@@ -16,7 +16,7 @@ Interpreter::~Interpreter()
 
 }
 
-std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, Context context)
+std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::string method_name = "visit_";
     if (std::holds_alternative<std::shared_ptr<NumberNode>>(node))
@@ -60,15 +60,15 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, Context context)
     }
 }
 
-std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, Context context)
+std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
-    std::shared_ptr<Number> number = std::make_shared<Number>(std::stol(std::get<0>(node)->tok.value), std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
+    std::shared_ptr<Number> number = std::make_shared<Number>(std::stol(std::get<0>(node)->tok.value), context, std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
 
     std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
     return rt_result->success(number);
 }
 
-std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, Context context)
+std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
@@ -135,7 +135,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, Cont
     }
 }
 
-std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, Context context)
+std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
