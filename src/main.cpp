@@ -70,12 +70,6 @@ int main()
 
         if (std::holds_alternative<Error>(result))
         {
-            Error& error = std::get<Error>(result);
-            if (RTError* rt_error = dynamic_cast<RTError*>(&error))
-            {
-                std::cout << rt_error->as_string() << '\n';
-            }
-
             std::cout << std::get<1>(result).as_string() << '\n';
         }
 
