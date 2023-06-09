@@ -6,39 +6,12 @@
 
 #include "Token.hpp"
 
-bool operator==(const Position& pos1, const Position& pos2) 
-{
-    bool result = false;
-
-    if (pos1.col == pos2.col) result = true;
-    else result = false;
-
-    if (pos1.fn == pos2.fn) result = true;
-    else result = false;
-
-    if (pos1.ftxt == pos2.ftxt) result = true;
-    else result = false;
-
-    if (pos1.idx == pos2.idx) result = true;
-    else result = false;
-
-    if (pos1.ln == pos2.ln) result = true;
-    else result = false;
-
-    return result;
-}
-
-bool operator!=(const Position& pos1, const Position& pos2) 
-{
-    return !(pos1 == pos2);
-}
-
 Token::Token(TT type, Position pos_start, std::string value, Position pos_end) : pos_start(pos_start), pos_end(pos_end)
 {
     this->type = type;
     this->value = value;
 
-    if (pos_start != EMPTY_POSITION)
+    if (pos_start.idx != -1 && pos_start.col != -1)
     {
         this->pos_start = pos_start.copy();
         this->pos_end = pos_start.copy();
@@ -46,7 +19,7 @@ Token::Token(TT type, Position pos_start, std::string value, Position pos_end) :
         this->pos_end.advance();
     }
 
-    if (pos_end != EMPTY_POSITION)
+    if (pos_end.idx != -1 && pos_end.col != -1)
     {
         this->pos_end = pos_end;
     }

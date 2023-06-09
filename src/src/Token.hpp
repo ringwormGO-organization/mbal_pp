@@ -42,6 +42,3 @@ class Token
         Position pos_start;
         Position pos_end;
 };
-
-bool operator==(const Position& pos1, const Position& pos2);
-bool operator!=(const Position& pos1, const Position& pos2);
