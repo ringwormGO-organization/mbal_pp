@@ -85,25 +85,12 @@ std::shared_ptr<ParseResult> Parser::parse()
     return res;
 }
 
-std::shared_ptr<ParseResult> Parser::factor()
+std::shared_ptr<ParseResult> Parser::atom()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
     Token tok = current_tok;
 
-    if (tok.type == TT::PLUS || tok.type == TT::MINUS)
-    {
-        res->register_result(this->advance());
-        auto factor = res->register_result(this->factor());
-
-        if (res->error->error_name != "")
-        {
-            return res;
-        }
-
-        return res.get()->success(std::make_shared<UnaryOpNode>(tok, std::get<2>(factor)));
-    }
-
-    else if (tok.type == TT::INT || tok.type == TT::FLOAT)
+    if (tok.type == TT::INT || tok.type == TT::FLOAT)
     {
         res.get()->register_result(this->advance());
         return res->success(std::make_shared<NumberNode>(tok));
@@ -136,8 +123,39 @@ std::shared_ptr<ParseResult> Parser::factor()
 
     return res.get()->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
-        "Expected INT or FLOAT"
+        "Expected INT or FLOAT, '+', '-' or '('"
     ));
+}
+
+std::shared_ptr<ParseResult> Parser::power()
+{
+    TT ops[1] {TT::POW};
+
+    std::function<std::shared_ptr<ParseResult>()> fac_a = [this]() { return this->atom(); };
+    std::function<std::shared_ptr<ParseResult>()> fac_b = [this]() { return this->factor(); };
+
+    return this->bin_op<1>(fac_a, ops, fac_b);
+}
+
+std::shared_ptr<ParseResult> Parser::factor()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+    Token tok = current_tok;
+
+    if (tok.type == TT::PLUS || tok.type == TT::MINUS)
+    {
+        res->register_result(this->advance());
+        auto factor = res->register_result(this->factor());
+
+        if (res->error->error_name != "")
+        {
+            return res;
+        }
+
+        return res.get()->success(std::make_shared<UnaryOpNode>(tok, std::get<2>(factor)));
+    }
+
+    return this->power();
 }
 
 std::shared_ptr<ParseResult> Parser::term()
@@ -157,10 +175,15 @@ std::shared_ptr<ParseResult> Parser::expr()
 }
 
 template <int N>
-std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseResult>()> func, TT ops[N])
+std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, TT ops[N], std::function<std::shared_ptr<ParseResult>()> func_b)
 {
+    if (func_b == nullptr)
+    {
+        func_b = func_a;
+    }
+
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    auto left = res.get()->register_result(func());
+    auto left = res.get()->register_result(func_a());
 
     if (res.get()->error->error_name != "") return res;
     while (this->contains<N>(current_tok.type, ops))
@@ -168,7 +191,7 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
         Token op_tok = current_tok;
         res.get()->register_result(this->advance());
 
-        auto right = res.get()->register_result(func());
+        auto right = res.get()->register_result(func_b());
         if (res.get()->error->error_name != "") return res;
 
         left = std::make_shared<BinOpNode> (

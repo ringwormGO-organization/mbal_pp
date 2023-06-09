@@ -49,12 +49,14 @@ class Parser
         Token advance();
         std::shared_ptr<ParseResult> parse();
 
+        std::shared_ptr<ParseResult> atom();
+        std::shared_ptr<ParseResult> power();
         std::shared_ptr<ParseResult> factor();
         std::shared_ptr<ParseResult> term();
         std::shared_ptr<ParseResult> expr();
 
         template <int N>
-        std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func, TT ops[N]);
+        std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, TT ops[N], std::function<std::shared_ptr<ParseResult>()> func_b = nullptr);
 
         std::vector<Token> tokens;
     private:

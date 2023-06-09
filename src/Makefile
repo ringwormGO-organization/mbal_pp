@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -pedantic -g --std=c++20
+CFLAGS = -Wall -Wextra -pedantic -g --std=c++20 -lm
 
 OBJ = obj
 

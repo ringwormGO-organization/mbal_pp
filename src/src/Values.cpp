@@ -66,3 +66,11 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::dived_by(std
         return { std::make_shared<Number>(this->value / std::get<0>(other).get()->value, this->context), std::make_shared<NoError>() };
     }
 }
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::powed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>(pow(this->value, std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+}

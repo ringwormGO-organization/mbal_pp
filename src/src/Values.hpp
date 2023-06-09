@@ -7,6 +7,7 @@
 #pragma once
 
 #include <iostream>
+#include <math.h>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -32,6 +33,7 @@ class Number : public std::enable_shared_from_this<Number>
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> powed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
 
     public:
         std::shared_ptr<Error> error;

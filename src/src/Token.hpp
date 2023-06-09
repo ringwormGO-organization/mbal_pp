@@ -19,6 +19,7 @@ enum TT {
     MINUS,
     MUL,
     DIV,
+    POW,
     LPAREN,
     RPAREN,
     END_OF_FILE,

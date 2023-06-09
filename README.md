@@ -19,7 +19,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [ ] EP 12 - Mutli-line statments
 - [ ] EP 13 - RETURN, CONTINUE and BREAK
 - [ ] EP 14 - RUN statments and comments
-- [ ] EP BONUS - Power operator
+- [x] EP BONUS - Power operator
 
 ### Code Pulse's GitHub PRs
 - [ ] Classes
