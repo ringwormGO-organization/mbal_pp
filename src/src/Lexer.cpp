@@ -23,7 +23,7 @@ void Lexer::advance()
 {
     this->pos.advance(this->current_char);
     
-    if (this->pos.idx < this->text.size())
+    if (this->pos.idx < static_cast<signed long>(this->text.size()))
     {
         this->current_char = text.at(this->pos.idx);
     }

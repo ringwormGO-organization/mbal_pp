@@ -29,9 +29,6 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [ ] Generics
 - [ ] Self hosted
 
-### FIX-NOW
-- [ ] fix `string with arrows()` function
-
 ## Credits
 - [ChatGPT](ai.com)
 - [Tom Weiland Discord server](https://discord.gg/tomweiland)

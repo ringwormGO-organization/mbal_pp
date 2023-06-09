@@ -256,6 +256,9 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             return res->success(result);
         }
     }
+
+    throw InterpreterWrongType();
+    return nullptr;
 }
 
 std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
@@ -314,4 +317,7 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
             return res->success(number);
         }
     }
+
+    throw InterpreterWrongType();
+    return nullptr;
 }

@@ -102,3 +102,11 @@ class InterpreterWrongType : public std::exception
 
         const char* what() const noexcept override { return "[InterpreterWrongType] Wrong type in `node` variable"; }
 };
+
+class ValueWrongType : public std::exception
+{
+    public:
+        ValueWrongType() noexcept = default;
+
+        const char* what() const noexcept override { return "[ValueWrongType] Wrong type in `other` variable"; }
+};

@@ -60,7 +60,7 @@ Token Parser::advance()
 {
     this->tok_idx += 1;
 
-    if (this->tok_idx < this->tokens.size())
+    if (this->tok_idx < static_cast<signed long>(this->tokens.size()))
     {
         current_tok = this->tokens[this->tok_idx];
     }

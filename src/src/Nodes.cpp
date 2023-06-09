@@ -6,7 +6,7 @@
 
 #include "Nodes.hpp"
 
-NumberNode::NumberNode(Token tok) : tok(tok), pos_start(pos_start), pos_end(pos_end)
+NumberNode::NumberNode(Token tok) : tok(tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
 {
     this->tok = tok;
 
@@ -21,7 +21,7 @@ std::string NumberNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok), pos_start(pos_start), pos_end(pos_end)
+BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
 {
     this->left_node = left_node;
     this->op_tok = op_tok;
@@ -45,7 +45,7 @@ std::string BinOpNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok), pos_start(pos_start), pos_end(pos_end)
+UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
 {
     this->op_tok = op_tok;
     this->node = node;

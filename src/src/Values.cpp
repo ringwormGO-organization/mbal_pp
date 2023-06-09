@@ -32,6 +32,9 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::added_to(std
     {
         return { std::make_shared<Number>(this->value + std::get<0>(other).get()->value), std::make_shared<NoError>() };
     }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
 
 std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
@@ -40,6 +43,9 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::subbed_by(st
     {
         return { std::make_shared<Number>(this->value - std::get<0>(other).get()->value, this->context), std::make_shared<NoError>() };
     }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
 
 std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
@@ -48,6 +54,9 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::multed_by(st
     {
         return { std::make_shared<Number>(this->value * std::get<0>(other).get()->value, this->context), std::make_shared<NoError>() };
     }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
 
 std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
@@ -65,6 +74,9 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::dived_by(std
 
         return { std::make_shared<Number>(this->value / std::get<0>(other).get()->value, this->context), std::make_shared<NoError>() };
     }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
 
 std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::powed_by(std::variant<std::shared_ptr<Number>, ParseResult> other)
@@ -73,4 +85,7 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::powed_by(std
     {
         return { std::make_shared<Number>(pow(this->value, std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
     }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
