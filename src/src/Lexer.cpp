@@ -6,6 +6,12 @@
 
 #include "Lexer.hpp"
 
+template<typename C, typename T>
+bool contains(C&& c, T e) 
+{ 
+    return std::find(std::begin(c), std::end(c), e) != std::end(c);
+}
+
 Lexer::Lexer(std::string fn, std::string text) : pos(-1, 0, -1, fn, text)
 {
     this->fn = fn;
@@ -51,6 +57,11 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             tokens.push_back(this->make_number());
         }
 
+        else if (isalpha((int)this->current_char))
+        {
+            tokens.push_back(this->make_identifier());
+        }
+
         else if (this->current_char == '+')
         {
             tokens.push_back(Token(TT::PLUS, this->pos));
@@ -78,6 +89,12 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
         else if (this->current_char == '^')
         {
             tokens.push_back(Token(TT::POW, this->pos));
+            this->advance();
+        }
+
+        else if (this->current_char == '=')
+        {
+            tokens.push_back(Token(TT::EQ, this->pos));
             this->advance();
         }
 
@@ -144,4 +161,21 @@ Token Lexer::make_number()
     {
         return Token(TT::FLOAT, pos_start, num_str, this->pos);
     }
+}
+
+Token Lexer::make_identifier()
+{
+    std::string id_str = "";
+    Position pos_start = this->pos.copy();
+
+    while (this->current_char != '\0' && (isdigit((int)this->current_char) || isdigit((int)this->current_char) || this->current_char == '_'))
+    {
+        id_str += std::string(1, this->current_char);
+        this->advance();
+    }
+
+    TT tok_type;
+    (contains(KEYWORDS, id_str)) ? tok_type = TT::KEYWORD : tok_type = TT::IDENTIFIER;
+
+    return Token(tok_type, pos_start, id_str, this->pos);
 }

@@ -12,18 +12,35 @@
 #include "Error.hpp"
 #include "Position.hpp"
 
-enum TT {
-    INT,
-    FLOAT,
-    PLUS,
-    MINUS,
-    MUL,
-    DIV,
-    POW,
-    LPAREN,
-    RPAREN,
-    END_OF_FILE,
-    NUL,
+enum TT 
+{
+    /* Variable type */
+        INT,
+        FLOAT,
+
+    /* Operators */
+        PLUS,
+        MINUS,
+        MUL,
+        DIV,
+        POW,
+        EQ,
+
+    /* Parentheses */
+        LPAREN,
+        RPAREN,
+
+    /* Identifiers */
+        IDENTIFIER,
+        KEYWORD,
+
+    /* Other */
+        END_OF_FILE,
+        NUL,
+};
+
+static const std::string KEYWORDS[] = {
+    "VAR",
 };
 
 class Token

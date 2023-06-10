@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -16,6 +17,9 @@
 #include "Position.hpp"
 #include "Token.hpp"
 
+template<typename C, typename T>
+bool contains(C&& c, T e);
+
 class Lexer
 {
     public:
@@ -24,7 +28,9 @@ class Lexer
 
         void advance();
         std::tuple<std::vector<Token>, std::shared_ptr<Error>> make_tokens();
+
         Token make_number();
+        Token make_identifier();
 
     private:
         std::string fn = "";
