@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -15,25 +15,22 @@
 
 #include "Context.hpp"
 #include "Error.hpp"
-#include "Nodes.hpp"
 #include "Position.hpp"
 #include "Token.hpp"
-
-#include "../empty.hpp"
 
 class Number : public std::enable_shared_from_this<Number>
 {
     public:
-        Number(signed long value, std::shared_ptr<Context> context=nullptr, Position pos_start = EMPTY_POSITION, Position pos_end = EMPTY_POSITION);
+        Number(signed long value, std::shared_ptr<Context> context=nullptr, Position pos_start = Position(-1, 0, -1, "", ""), Position pos_end = Position(-1, 0, -1, "", ""));
         ~Number();
 
         std::string repr();
 
-        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
-        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> powed_by(std::variant<std::shared_ptr<Number>, ParseResult> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> powed_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
 
     public:
         std::shared_ptr<Error> error;

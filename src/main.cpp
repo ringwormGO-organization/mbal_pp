@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -8,8 +8,6 @@
 #include <memory>
 #include <string>
 #include <variant>
-
-#include "empty.hpp"
 
 #include "src/Error.hpp"
 #include "src/Interpreter.hpp"

@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -18,38 +18,17 @@ Interpreter::~Interpreter()
 
 std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
-    std::string method_name = "visit_";
     if (std::holds_alternative<std::shared_ptr<NumberNode>>(node))
-    {
-        method_name += "NumberNode";
-    }
-
-    else if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
-    {
-        method_name += "BinOpNode";
-    }
-
-    else if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(node))
-    {
-        method_name += "UnaryOpNode";
-    }
-
-    else
-    {
-        throw InterpreterWrongType();
-    }
-
-    if (method_name == "visit_NumberNode")
     {
         return this->visit_NumberNode(node, context);
     }
 
-    else if (method_name == "visit_BinOpNode")
+    else if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
     {
         return this->visit_BinaryOpNode(node, context);
     }
 
-    else if (method_name == "visit_UnaryOpNode")
+    else if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(node))
     {
         return this->visit_UnaryOpNode(node, context);
     }
@@ -111,7 +90,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 
@@ -143,7 +122,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 
@@ -175,7 +154,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 
@@ -207,7 +186,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 
@@ -239,7 +218,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 
@@ -300,7 +279,7 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 
             else
             {
-                error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
             }
         }
 

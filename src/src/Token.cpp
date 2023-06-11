@@ -1,12 +1,12 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
 #include "Token.hpp"
 
-Token::Token(TT type, Position pos_start, std::string value, Position pos_end) : pos_start(pos_start), pos_end(pos_end)
+Token::Token(TT type, Position pos_start, std::string value, Position pos_end) : pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
 {
     this->type = type;
     this->value = value;

@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -14,8 +14,6 @@
 
 #include "Context.hpp"
 #include "Position.hpp"
-
-static const Position EMPTY_POSITION = Position(-1, 0, -1, "", "");
 
 std::string string_with_arrows(std::string text, Position pos_start, Position pos_end);
 
@@ -89,7 +87,7 @@ class RTError : public Error
 class NoError : public Error
 {
     public:
-        NoError() : Error(EMPTY_POSITION, EMPTY_POSITION, "", "") {};
+        NoError() : Error(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "") {};
         std::string as_string() override { return ""; }
 };
 

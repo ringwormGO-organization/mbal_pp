@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 
-#include "Error.hpp"
 #include "Position.hpp"
 
 enum TT 
@@ -46,7 +45,7 @@ static const std::string KEYWORDS[] = {
 class Token
 {
     public:
-        Token(TT type, Position pos_start = EMPTY_POSITION, std::string value = "", Position pos_end = EMPTY_POSITION);
+        Token(TT type, Position pos_start = Position(-1, 0, -1, "", ""), std::string value = "", Position pos_end = Position(-1, 0, -1, "", ""));
         ~Token();
 
         std::string repr();

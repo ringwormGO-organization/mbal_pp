@@ -1,6 +1,6 @@
 /**
  * @author Andrej123456789 (Andrej Bartulin)
- * @project: mbal++, simple game inspired by Uno in terminal
+ * @project: mbal++
  * @license: ringwormGO General License 1.0 | (RGL) 2022
 */
 
@@ -24,5 +24,5 @@ class RTResult : public std::enable_shared_from_this<RTResult>
 
     public:
         std::shared_ptr<Number> value;
-        std::shared_ptr<Error> error = std::make_shared<Error>(EMPTY_POSITION, EMPTY_POSITION, "", "");
+        std::shared_ptr<Error> error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
 };
