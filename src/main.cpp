@@ -14,7 +14,10 @@
 #include "src/Lexer.hpp"
 #include "src/Nodes.hpp"
 #include "src/Parser.hpp"
+#include "src/SymbolTable.hpp"
 #include "src/Token.hpp"
+
+std::shared_ptr<SymbolTable> global_symbol_table = std::make_shared<SymbolTable>();
 
 std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn, std::string text)
 {
@@ -40,6 +43,7 @@ std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn
     Interpreter interpreter;
     std::shared_ptr<Context> context = std::make_shared<Context>("<program>");
 
+    context->symbol_table = global_symbol_table;
     std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, context);
 
     if (interpreter_result->error->error_name != "")
@@ -64,6 +68,7 @@ int main()
             exit(0);
         }
 
+        global_symbol_table->set(std::string("null"), std::make_shared<Number>(0));
         std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> result = run("<stdin>", input);
 
         if (std::holds_alternative<std::shared_ptr<Error>>(result))

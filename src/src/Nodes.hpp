@@ -17,6 +17,8 @@
 #include "define.hpp"
 
 class NumberNode;
+class VarAccessNode;
+class varAssignNode;
 class BinOpNode;
 class UnaryOpNode;
 
@@ -31,8 +33,35 @@ class NumberNode
     public:
         Token tok;
 
-        Position pos_start;
-        Position pos_end;
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
+};
+
+class VarAccessNode
+{
+    public:
+        VarAccessNode(Token var_name_tok);
+        ~VarAccessNode();
+
+    public:
+        Token var_name_tok;
+
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
+};
+
+class VarAssignNode
+{
+    public:
+        VarAssignNode(Token var_name_tok, std::shared_ptr<NumberNode> value_node);
+        ~VarAssignNode();
+
+    public:
+        Token var_name_tok;
+        std::shared_ptr<NumberNode> value_node;
+        
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
 };
 
 class BinOpNode
@@ -48,8 +77,8 @@ class BinOpNode
         Token op_tok;
         ALL_VARIANT right_node;
 
-        Position pos_start;
-        Position pos_end;
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
 };
 
 class UnaryOpNode
@@ -64,6 +93,6 @@ class UnaryOpNode
         Token op_tok;
         ALL_VARIANT node;
 
-        Position pos_start;
-        Position pos_end;
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
 };

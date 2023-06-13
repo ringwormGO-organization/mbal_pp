@@ -6,6 +6,8 @@
 
 #include "Interpreter.hpp"
 
+#include "SymbolTable.hpp"
+
 Interpreter::Interpreter()
 {
 
@@ -21,6 +23,16 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
     if (std::holds_alternative<std::shared_ptr<NumberNode>>(node))
     {
         return this->visit_NumberNode(node, context);
+    }
+
+    else if (std::holds_alternative<std::shared_ptr<VarAccessNode>>(node))
+    {
+        return this->visit_VarAccessNode(node, context);
+    }
+
+    else if (std::holds_alternative<std::shared_ptr<VarAssignNode>>(node))
+    {
+        return this->visit_VarAssignNode(node, context);
     }
 
     else if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
@@ -47,14 +59,47 @@ std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::s
     return rt_result->success(number);
 }
 
+std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    std::string var_name = std::get<std::shared_ptr<VarAccessNode>>(node)->var_name_tok.value;
+    std::variant<std::shared_ptr<Number>, std::nullptr_t> value = context->symbol_table->get_value(var_name);
+
+    std::string details = var_name += std::string(" is not defined");
+    if (std::holds_alternative<std::nullptr_t>(value))
+    {
+        return res->failure(std::make_shared<RTError> (
+            std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start, std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end,
+            details,
+            context
+        ));
+    }
+
+    return res->success(std::get<std::shared_ptr<Number>>(value));
+}
+
+std::shared_ptr<RTResult> Interpreter::visit_VarAssignNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    std::string var_name = std::get<std::shared_ptr<VarAssignNode>>(node)->var_name_tok.value;
+    std::shared_ptr<Number> value = res->register_result(this->visit(std::get<std::shared_ptr<VarAssignNode>>(node)->value_node, context));
+
+    if (res->error->error_name != "") { return res; }
+
+    context->symbol_table->set(var_name, value);
+    return res->success(value);
+}
+
 std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    std::shared_ptr<Number> left = res->register_result(this->visit(std::get<1>(node)->left_node, context));
+    std::shared_ptr<Number> left = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->left_node, context));
     if (res->error->error_name != "") { return res; }
 
-    std::shared_ptr<Number> right = res->register_result(this->visit(std::get<1>(node)->right_node, context));
+    std::shared_ptr<Number> right = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->right_node, context));
     if (res->error->error_name != "") { return res; }
 
     if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
@@ -62,7 +107,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
         std::shared_ptr<Error> error = std::make_shared<NoError>();
         std::shared_ptr<Number> result;
 
-        if (std::get<1>(node)->op_tok.type == TT::PLUS)
+        if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::PLUS)
         {
             auto [temp_result, temp_error] = left->added_to(right);
 
@@ -90,11 +135,11 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 
-        else if (std::get<1>(node)->op_tok.type == TT::MINUS)
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::MINUS)
         {
             auto [temp_result, temp_error] = left->subbed_by(right);
 
@@ -122,11 +167,11 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 
-        else if (std::get<1>(node)->op_tok.type == TT::MUL)
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::MUL)
         {
             auto [temp_result, temp_error] = left->multed_by(right);
 
@@ -154,11 +199,11 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 
-        else if (std::get<1>(node)->op_tok.type == TT::DIV)
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::DIV)
         {
             auto [temp_result, temp_error] = left->dived_by(right);
 
@@ -186,11 +231,11 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 
-        else if (std::get<1>(node)->op_tok.type == TT::POW)
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::POW)
         {
             auto [temp_result, temp_error] = left->powed_by(right);
 
@@ -218,7 +263,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 
@@ -229,8 +274,8 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 
         else
         {
-            result->pos_start = std::get<1>(node)->pos_start;
-            result->pos_end = std::get<1>(node)->pos_end;
+            result->pos_start = std::get<std::shared_ptr<BinOpNode>>(node)->pos_start;
+            result->pos_end = std::get<std::shared_ptr<BinOpNode>>(node)->pos_end;
 
             return res->success(result);
         }
@@ -244,14 +289,14 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    std::shared_ptr<Number> number = res->register_result(this->visit(std::get<2>(node)->node, context));
+    std::shared_ptr<Number> number = res->register_result(this->visit(std::get<std::shared_ptr<UnaryOpNode>>(node)->node, context));
     if (res->error->error_name != "") { return res; }
 
     std::shared_ptr<Error> error = std::make_shared<NoError>();
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(node))
     {
-        if (std::get<2>(node)->op_tok.type == TT::MINUS)
+        if (std::get<std::shared_ptr<UnaryOpNode>>(node)->op_tok.type == TT::MINUS)
         {
             auto [temp_number, temp_error] = number->multed_by(std::make_shared<Number>(-1));
 
@@ -279,7 +324,7 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 
             else
             {
-                error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
             }
         }
 

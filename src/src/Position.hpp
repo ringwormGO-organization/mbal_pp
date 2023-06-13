@@ -7,20 +7,21 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
 
-class Position
+class Position : public std::enable_shared_from_this<Position>
 {
     public:
-        Position(signed long idx, signed long ln, signed long col, std::string fn, std::string ftxt);
+        Position(size_t idx, size_t ln, size_t col, std::string fn, std::string ftxt);
         ~Position();
 
-        Position* advance(char current_char = '\0');
-        Position copy();
+        std::shared_ptr<Position> advance(char current_char = '\0');
+        std::shared_ptr<Position> copy();
     public:
-        signed long idx = -1;
-        signed long ln = -1;
-        signed long col = -1;
+        size_t idx = 0;
+        size_t ln = 0;
+        size_t col = 0;
 
         std::string fn = "";
         std::string ftxt = "";

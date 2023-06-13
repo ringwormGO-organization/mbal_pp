@@ -28,6 +28,8 @@ class Interpreter
         std::shared_ptr<RTResult> visit(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         std::shared_ptr<RTResult> visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+        std::shared_ptr<RTResult> visit_VarAccessNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+        std::shared_ptr<RTResult> visit_VarAssignNode(ALL_VARIANT node, std::shared_ptr<Context> context);
         std::shared_ptr<RTResult> visit_BinaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context);
         std::shared_ptr<RTResult> visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 };

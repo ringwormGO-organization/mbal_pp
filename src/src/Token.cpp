@@ -6,21 +6,17 @@
 
 #include "Token.hpp"
 
-Token::Token(TT type, Position pos_start, std::string value, Position pos_end) : pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
+Token::Token(TT type, std::shared_ptr<Position> pos_start, std::string value, std::shared_ptr<Position> pos_end)
 {
     this->type = type;
     this->value = value;
 
-    if (pos_start.idx != -1 && pos_start.col != -1)
+    if (pos_start != nullptr && pos_end != nullptr)
     {
-        this->pos_start = pos_start.copy();
-        this->pos_end = pos_start.copy();
-        
-        this->pos_end.advance();
-    }
+        this->pos_start = pos_start->copy();
+        this->pos_end = pos_start->copy();
 
-    if (pos_end.idx != -1 && pos_end.col != -1)
-    {
+        this->pos_end->advance();
         this->pos_end = pos_end;
     }
 }
@@ -28,6 +24,11 @@ Token::Token(TT type, Position pos_start, std::string value, Position pos_end) :
 Token::~Token()
 {
 
+}
+
+bool Token::matches(TT type, std::string value)
+{
+    return (this->type == type && this->value == value);
 }
 
 std::string Token::repr()

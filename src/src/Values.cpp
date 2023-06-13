@@ -6,7 +6,12 @@
 
 #include "Values.hpp"
 
-Number::Number(signed long value, std::shared_ptr<Context> context, Position pos_start, Position pos_end) : pos_start(pos_start), pos_end(pos_end)
+#include "Context.hpp"
+#include "Error.hpp"
+#include "Position.hpp"
+#include "Token.hpp"
+
+Number::Number(signed long value, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
 {
     this->value = value;
 

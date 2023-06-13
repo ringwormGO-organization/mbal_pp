@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "Error.hpp"
 #include "Values.hpp"
 
 class RTResult : public std::enable_shared_from_this<RTResult>
@@ -24,5 +25,5 @@ class RTResult : public std::enable_shared_from_this<RTResult>
 
     public:
         std::shared_ptr<Number> value;
-        std::shared_ptr<Error> error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+        std::shared_ptr<Error> error = std::make_shared<Error>(std::make_shared<Position>(0, 0, 0, "", ""), std::make_shared<Position>(0, 0, 0, "", ""), "", "");
 };

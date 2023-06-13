@@ -35,7 +35,7 @@ class ParseResult : public std::enable_shared_from_this<ParseResult>
         std::shared_ptr<ParseResult> failure(std::shared_ptr<Error> error);
 
     public:
-        std::shared_ptr<Error> error = std::make_shared<Error>(Position(-1, 0, -1, "", ""), Position(-1, 0, -1, "", ""), "", "");
+        std::shared_ptr<Error> error = std::make_shared<Error>(std::make_shared<Position>(0, 0, 0, "", ""), std::make_shared<Position>(0, 0, 0, "", ""), "", "");
         ALL_VARIANT node;
 };
 
@@ -59,7 +59,8 @@ class Parser
 
         std::vector<Token> tokens;
     private:
-        signed long tok_idx = -1;
+        size_t tok_idx = 0;
+        bool first_run = true;
 
         template <int N>
         bool contains(TT current, TT ops[N]);

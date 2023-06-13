@@ -37,7 +37,9 @@ class Lexer
         std::string text = "";
 
         char current_char = '\0';
-        Position pos;
+        std::shared_ptr<Position> pos = std::make_shared<Position>(0, 0, 0, "", "");
 
         std::string DIGITS = "0123456789";
+
+        bool first_run = true;
 };

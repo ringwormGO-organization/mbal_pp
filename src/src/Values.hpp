@@ -13,16 +13,15 @@
 #include <tuple>
 #include <variant>
 
-#include "Context.hpp"
-#include "Error.hpp"
-#include "Position.hpp"
-#include "Token.hpp"
+class Context;
+class Error;
+class Position;
 
 class Number : public std::enable_shared_from_this<Number>
 {
     public:
-        Number(signed long value, std::shared_ptr<Context> context=nullptr, Position pos_start = Position(-1, 0, -1, "", ""), Position pos_end = Position(-1, 0, -1, "", ""));
-        ~Number();
+        Number(signed long value, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        virtual ~Number();
 
         std::string repr();
 
@@ -36,8 +35,8 @@ class Number : public std::enable_shared_from_this<Number>
         std::shared_ptr<Error> error;
         signed long value;
 
-        Position pos_start;
-        Position pos_end;
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
 
         std::shared_ptr<Context> context;
 };

@@ -6,7 +6,7 @@
 
 #include "Nodes.hpp"
 
-NumberNode::NumberNode(Token tok) : tok(tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
+NumberNode::NumberNode(Token tok) : tok(tok)
 {
     this->tok = tok;
 
@@ -21,7 +21,38 @@ std::string NumberNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
+VarAccessNode::VarAccessNode(Token var_name_tok) : var_name_tok(TT::NUL)
+{
+    this->var_name_tok = var_name_tok;
+
+    this->pos_start = this->var_name_tok.pos_start;
+    this->pos_end = this->var_name_tok.pos_end;
+}
+
+VarAccessNode::~VarAccessNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+VarAssignNode::VarAssignNode(Token var_name_tok, std::shared_ptr<NumberNode> value_node) : var_name_tok(TT::NUL)
+{
+    this->var_name_tok = var_name_tok;
+    this->value_node = value_node;
+
+    this->pos_start = this->var_name_tok.pos_start;
+    this->pos_end = this->value_node->pos_end;
+}
+
+VarAssignNode::~VarAssignNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok)
 {
     this->left_node = left_node;
     this->op_tok = op_tok;
@@ -45,7 +76,7 @@ std::string BinOpNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok), pos_start(-1, 0, -1, "", ""), pos_end(-1, 0, -1, "", "")
+UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok)
 {
     this->op_tok = op_tok;
     this->node = node;

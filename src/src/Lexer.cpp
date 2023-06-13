@@ -12,7 +12,7 @@ bool contains(C&& c, T e)
     return std::find(std::begin(c), std::end(c), e) != std::end(c);
 }
 
-Lexer::Lexer(std::string fn, std::string text) : pos(-1, 0, -1, fn, text)
+Lexer::Lexer(std::string fn, std::string text)
 {
     this->fn = fn;
     this->text = text;
@@ -27,17 +27,28 @@ Lexer::~Lexer()
 
 void Lexer::advance()
 {
-    this->pos.advance(this->current_char);
-    
-    if (this->pos.idx < static_cast<signed long>(this->text.size()))
+    if (this->first_run)
     {
-        this->current_char = text.at(this->pos.idx);
+        first_run = false;
     }
 
     else
     {
-        this->current_char = '\0';
+        this->pos->advance(this->current_char);
     }
+
+    if (this->pos != nullptr)
+    {
+        if (this->pos->idx < this->text.size())
+        {
+            this->current_char = text.at(this->pos->idx);
+        }
+
+        else
+        {
+            this->current_char = '\0';
+        }
+    }    
 }
 
 std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
@@ -112,7 +123,7 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
 
         else
         {
-            Position pos_start = this->pos.copy();
+            std::shared_ptr<Position> pos_start = this->pos->copy();
 
             char ch = this->current_char;
             this->advance();
@@ -129,7 +140,7 @@ Token Lexer::make_number()
 {
     std::string num_str = "";
     size_t dot_count = 0;
-    Position pos_start = this->pos.copy();
+    std::shared_ptr<Position> pos_start = this->pos->copy();
 
     while (this->current_char != '\0' && ((DIGITS += ".").find(this->current_char) != std::string::npos))
     {
@@ -166,9 +177,9 @@ Token Lexer::make_number()
 Token Lexer::make_identifier()
 {
     std::string id_str = "";
-    Position pos_start = this->pos.copy();
+    std::shared_ptr<Position> pos_start = this->pos->copy();
 
-    while (this->current_char != '\0' && (isdigit((int)this->current_char) || isdigit((int)this->current_char) || this->current_char == '_'))
+    while (this->current_char != '\0' && (std::isdigit(this->current_char) || std::isalpha(this->current_char) || this->current_char == '_')) 
     {
         id_str += std::string(1, this->current_char);
         this->advance();

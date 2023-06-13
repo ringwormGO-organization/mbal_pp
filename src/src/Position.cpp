@@ -6,7 +6,7 @@
 
 #include "Position.hpp"
 
-Position::Position(signed long idx, signed long ln, signed long col, std::string fn, std::string ftxt)
+Position::Position(size_t idx, size_t ln, size_t col, std::string fn, std::string ftxt)
 {
     this->idx = idx;
     this->ln = ln;
@@ -21,7 +21,7 @@ Position::~Position()
 
 }
 
-Position* Position::advance(char current_char)
+std::shared_ptr<Position> Position::advance(char current_char)
 {
     this->idx += 1;
     this->col += 1;
@@ -32,10 +32,10 @@ Position* Position::advance(char current_char)
         this->col = 0;
     }
 
-    return this;
+    return std::shared_ptr<Position>(shared_from_this());
 }
 
-Position Position::copy()
+std::shared_ptr<Position> Position::copy()
 {
-    return Position(this->idx, this->ln, this->col, this->fn, this->ftxt);
+    return std::make_shared<Position>(this->idx, this->ln, this->col, this->fn, this->ftxt);
 }

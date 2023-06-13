@@ -45,9 +45,10 @@ static const std::string KEYWORDS[] = {
 class Token
 {
     public:
-        Token(TT type, Position pos_start = Position(-1, 0, -1, "", ""), std::string value = "", Position pos_end = Position(-1, 0, -1, "", ""));
+        Token(TT type, std::shared_ptr<Position> pos_start = nullptr, std::string value = "", std::shared_ptr<Position> pos_end = nullptr);
         ~Token();
 
+        bool matches(TT type, std::string value);
         std::string repr();
         std::string enum_to_string();
 
@@ -55,6 +56,6 @@ class Token
         TT type;
         std::string value = "";
 
-        Position pos_start;
-        Position pos_end;
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;
 };

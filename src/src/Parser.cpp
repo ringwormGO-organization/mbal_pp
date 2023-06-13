@@ -58,9 +58,17 @@ Parser::~Parser()
 
 Token Parser::advance()
 {
-    this->tok_idx += 1;
+    if (this->first_run)
+    {
+        first_run = false;
+    }
 
-    if (this->tok_idx < static_cast<signed long>(this->tokens.size()))
+    else
+    {
+        this->tok_idx += 1;
+    }
+
+    if (this->tok_idx < this->tokens.size())
     {
         current_tok = this->tokens[this->tok_idx];
     }
@@ -94,6 +102,12 @@ std::shared_ptr<ParseResult> Parser::atom()
     {
         res.get()->register_result(this->advance());
         return res->success(std::make_shared<NumberNode>(tok));
+    }
+
+    else if (tok.type == TT::IDENTIFIER)
+    {
+        res->register_result(this->advance());
+        return res->success(std::make_shared<VarAccessNode>(tok));
     }
 
     else if (tok.type == TT::LPAREN)
@@ -168,6 +182,38 @@ std::shared_ptr<ParseResult> Parser::term()
 
 std::shared_ptr<ParseResult> Parser::expr()
 {
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (current_tok.matches(TT::KEYWORD, "VAR"))
+    {
+        res->register_result(this->advance());
+        
+        if (current_tok.type != TT::IDENTIFIER)
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                current_tok.pos_start, current_tok.pos_end,
+                "Expected an identifier"
+            ));
+        }
+
+        Token var_name = current_tok;
+        res->register_result(this->advance());
+
+        if (current_tok.type != TT::EQ)
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                current_tok.pos_start, current_tok.pos_end,
+                "Expected '='"
+            ));
+        }
+
+        res->register_result(this->advance());
+        auto expression = res->register_result(this->expr());
+
+        if (res->error->error_name != "") { return res; }
+        return res->success(std::make_shared<VarAssignNode>(var_name, std::get<0>(std::get<2>(expression))));
+    }
+
     TT ops[2] {TT::PLUS, TT::MINUS};
 
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
