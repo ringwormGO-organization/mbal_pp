@@ -29,12 +29,15 @@ class ParseResult : public std::enable_shared_from_this<ParseResult>
         ParseResult();
         ~ParseResult();
 
-        PARSE_REGISTER_TYPES register_result(PARSE_REGISTER_TYPES res);
+        void register_advancement();
+        ALL_VARIANT register_result(std::shared_ptr<ParseResult> res);
 
         std::shared_ptr<ParseResult> success(ALL_VARIANT node);
         std::shared_ptr<ParseResult> failure(std::shared_ptr<Error> error);
 
     public:
+        size_t advance_count = 0;
+
         std::shared_ptr<Error> error = std::make_shared<Error>(std::make_shared<Position>(0, 0, 0, "", ""), std::make_shared<Position>(0, 0, 0, "", ""), "", "");
         ALL_VARIANT node;
 };

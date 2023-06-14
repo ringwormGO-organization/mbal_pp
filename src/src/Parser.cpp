@@ -16,19 +16,19 @@ ParseResult::~ParseResult()
 
 }
 
-PARSE_REGISTER_TYPES ParseResult::register_result(PARSE_REGISTER_TYPES res)
+void ParseResult::register_advancement()
 {
-    if (std::holds_alternative<std::shared_ptr<ParseResult>>(res))
-    {
-        if (std::get<std::shared_ptr<ParseResult>>(res)->error->error_name != "")
-        {
-            this->error = std::get<std::shared_ptr<ParseResult>>(res).get()->error;
-        }
+    this->advance_count++;
+}
 
-        return std::get<std::shared_ptr<ParseResult>>(res).get()->node;
+ALL_VARIANT ParseResult::register_result(std::shared_ptr<ParseResult> res)
+{
+    if (res->error->error_name != "")
+    {
+        this->error = res->error;
     }
 
-    return res;
+    return res->node;
 }
 
 std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
@@ -80,9 +80,9 @@ std::shared_ptr<ParseResult> Parser::parse()
 {
     std::shared_ptr<ParseResult> res = this->expr();
 
-    if (res.get()->error->error_name == "" && current_tok.type != TT::END_OF_FILE)
+    if (res->error->error_name == "" && current_tok.type != TT::END_OF_FILE)
     {
-        return res.get()->failure (
+        return res->failure (
             std::make_shared<InvalidSyntaxError> (
                 current_tok.pos_start, current_tok.pos_end,
                 "Expected '+', '-', '*'or '/'"
@@ -100,42 +100,50 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     if (tok.type == TT::INT || tok.type == TT::FLOAT)
     {
-        res.get()->register_result(this->advance());
+        res->register_advancement();
+        this->advance();
+
         return res->success(std::make_shared<NumberNode>(tok));
     }
 
     else if (tok.type == TT::IDENTIFIER)
     {
-        res->register_result(this->advance());
+        res->register_advancement();
+        this->advance();
+
         return res->success(std::make_shared<VarAccessNode>(tok));
     }
 
     else if (tok.type == TT::LPAREN)
     {
-        res.get()->register_result(this->advance());
-        auto expr = res.get()->register_result(this->expr());
+        res->register_advancement();
+        this->advance();
 
-        if (res.get()->error->error_name != "")
+        auto expr = res->register_result(this->expr());
+
+        if (res->error->error_name != "")
         {
             return res;
         }
 
         if (current_tok.type == TT::RPAREN)
         {
-            res.get()->register_result(this->advance());
-            return res.get()->success(std::get<2>(expr));
+            res->register_advancement();
+            this->advance();
+
+            return res->success(std::get<2>(expr));
         }
 
         else
         {
-            return res.get()->failure(std::make_shared<InvalidSyntaxError> (
+            return res->failure(std::make_shared<InvalidSyntaxError> (
                 current_tok.pos_start, current_tok.pos_end,
                 "Expected ')'"
             ));
         }
     }
 
-    return res.get()->failure(std::make_shared<InvalidSyntaxError>(
+    return res->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
         "Expected INT or FLOAT, '+', '-' or '('"
     ));
@@ -158,15 +166,16 @@ std::shared_ptr<ParseResult> Parser::factor()
 
     if (tok.type == TT::PLUS || tok.type == TT::MINUS)
     {
-        res->register_result(this->advance());
-        auto factor = res->register_result(this->factor());
+        res->register_advancement();
+        this->advance();
 
+        auto factor = res->register_result(this->factor());
         if (res->error->error_name != "")
         {
             return res;
         }
 
-        return res.get()->success(std::make_shared<UnaryOpNode>(tok, std::get<2>(factor)));
+        return res->success(std::make_shared<UnaryOpNode>(tok, std::get<2>(factor)));
     }
 
     return this->power();
@@ -186,7 +195,8 @@ std::shared_ptr<ParseResult> Parser::expr()
 
     if (current_tok.matches(TT::KEYWORD, "VAR"))
     {
-        res->register_result(this->advance());
+        res->register_advancement();
+        this->advance();
         
         if (current_tok.type != TT::IDENTIFIER)
         {
@@ -197,7 +207,9 @@ std::shared_ptr<ParseResult> Parser::expr()
         }
 
         Token var_name = current_tok;
-        res->register_result(this->advance());
+
+        res->register_advancement();
+        this->advance();
 
         if (current_tok.type != TT::EQ)
         {
@@ -207,11 +219,13 @@ std::shared_ptr<ParseResult> Parser::expr()
             ));
         }
 
-        res->register_result(this->advance());
+        res->register_advancement();
+        this->advance();
+
         auto expression = res->register_result(this->expr());
 
         if (res->error->error_name != "") { return res; }
-        return res->success(std::make_shared<VarAssignNode>(var_name, std::get<0>(std::get<2>(expression))));
+        return res->success(std::make_shared<VarAssignNode>(var_name, std::get<std::shared_ptr<NumberNode>>(expression)));
     }
 
     TT ops[2] {TT::PLUS, TT::MINUS};
@@ -229,25 +243,27 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
     }
 
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    auto left = res.get()->register_result(func_a());
+    auto left = res->register_result(func_a());
 
-    if (res.get()->error->error_name != "") return res;
+    if (res->error->error_name != "") return res;
     while (this->contains<N>(current_tok.type, ops))
     {
         Token op_tok = current_tok;
-        res.get()->register_result(this->advance());
+        
+        res->register_advancement();
+        this->advance();
 
-        auto right = res.get()->register_result(func_b());
-        if (res.get()->error->error_name != "") return res;
+        auto right = res->register_result(func_b());
+        if (res->error->error_name != "") return res;
 
         left = std::make_shared<BinOpNode> (
-            std::get<ALL_VARIANT>(left),
+            left,
             op_tok,
-            std::get<ALL_VARIANT>(right)
+            right
         );
     }
 
-    return res.get()->success(std::get<ALL_VARIANT>(left));
+    return res->success(left);
 }
 
 template <int N>
