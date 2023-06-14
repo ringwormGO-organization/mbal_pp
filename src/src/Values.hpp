@@ -33,7 +33,7 @@ class Number : public std::enable_shared_from_this<Number>
 
     public:
         std::shared_ptr<Error> error;
-        signed long value;
+        signed long value = 0;
 
         std::shared_ptr<Position> pos_start;
         std::shared_ptr<Position> pos_end;

@@ -22,6 +22,7 @@ std::variant<std::shared_ptr<Number>, std::nullptr_t> SymbolTable::get_value(std
         return nullptr;
     }
 
+    value = pos->second;
     return value;
 }
 

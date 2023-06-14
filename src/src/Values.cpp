@@ -35,7 +35,7 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::added_to(std
 {
     if (std::holds_alternative<std::shared_ptr<Number>>(other))
     {
-        return { std::make_shared<Number>(this->value + std::get<0>(other).get()->value), std::make_shared<NoError>() };
+        return { std::make_shared<Number>(this->value + std::get<0>(other).get()->value, this->context), std::make_shared<NoError>() };
     }
 
     throw ValueWrongType();
