@@ -23,6 +23,8 @@ void ParseResult::register_advancement()
 
 ALL_VARIANT ParseResult::register_result(std::shared_ptr<ParseResult> res)
 {
+    this->advance_count += res->advance_count;
+
     if (res->error->error_name != "")
     {
         this->error = res->error;
@@ -39,7 +41,11 @@ std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
 
 std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 {
-    this->error = error;
+    if (this->error->error_name == "" && this->advance_count == 0) /* there is no error and therefore error_name is empty */
+    {
+        this->error = error;
+    }
+
     return std::shared_ptr<ParseResult>(shared_from_this());
 }
 
@@ -231,16 +237,16 @@ std::shared_ptr<ParseResult> Parser::expr()
     TT ops[2] {TT::PLUS, TT::MINUS};
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
     
-    std::shared_ptr<ParseResult> node = this->bin_op<2>(fac, ops);
+    ALL_VARIANT node = res->register_result(this->bin_op<2>(fac, ops));
     if (res->error->error_name != "") 
-    { 
+    {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             current_tok.pos_start, current_tok.pos_end,
             "Expected 'VAR', int, float, identifier, '+', '-', or '('"
         )); 
     }
 
-    return res->success(node->node);
+    return res->success(node);
 }
 
 template <int N>

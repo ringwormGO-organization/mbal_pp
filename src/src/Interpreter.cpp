@@ -76,7 +76,12 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
         ));
     }
 
-    return res->success(std::get<std::shared_ptr<Number>>(value));
+    
+    std::get<std::shared_ptr<Number>>(value)->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
+    std::get<std::shared_ptr<Number>>(value)->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
+
+    std::shared_ptr<Number> new_value = std::get<std::shared_ptr<Number>>(value);
+    return res->success(new_value);
 }
 
 std::shared_ptr<RTResult> Interpreter::visit_VarAssignNode(ALL_VARIANT node, std::shared_ptr<Context> context)
