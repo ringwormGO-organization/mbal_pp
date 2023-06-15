@@ -8,7 +8,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 1 - Lexer
 - [x] EP 2 - Parser
 - [x] EP 3 - Intepreter
-- [ ] EP 4 - Variables
+- [x] EP 4 - Variables
 - [ ] EP 5 - Comparasions and logical operators
 - [ ] EP 6 - IF statment
 - [ ] EP 7 - FOR and WHILE statment
@@ -33,3 +33,4 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [ChatGPT](ai.com)
 - [Tom Weiland Discord server](https://discord.gg/tomweiland)
 - [Stack Overflow](https://stackoverflow.com/)
+- [Forward declaration and smart pointer in C++ - ortogonal.github.io](https://ortogonal.github.io/cpp/forward-declaration-and-smart-pointers/)

@@ -117,31 +117,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             auto [temp_result, temp_error] = left->added_to(right);
 
             result = temp_result;
-            
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::MINUS)
@@ -149,31 +125,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             auto [temp_result, temp_error] = left->subbed_by(right);
 
             result = temp_result;
-            
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::MUL)
@@ -181,31 +133,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             auto [temp_result, temp_error] = left->multed_by(right);
 
             result = temp_result;
-            
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::DIV)
@@ -213,31 +141,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             auto [temp_result, temp_error] = left->dived_by(right);
 
             result = temp_result;
-            
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::POW)
@@ -245,31 +149,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             auto [temp_result, temp_error] = left->powed_by(right);
 
             result = temp_result;
-            
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         if (error->error_name != "")
@@ -306,31 +186,7 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
             auto [temp_number, temp_error] = number->multed_by(std::make_shared<Number>(-1));
 
             number = temp_number;
-
-            if (auto illegal_char_error = std::dynamic_pointer_cast<IllegalCharError>(temp_error))
-            {
-                error = std::make_shared<IllegalCharError>(illegal_char_error->pos_start, illegal_char_error->pos_end, illegal_char_error->details);
-            }
-
-            else if (auto invalid_syntax_error = std::dynamic_pointer_cast<InvalidSyntaxError>(temp_error))
-            {
-                error = std::make_shared<InvalidSyntaxError>(invalid_syntax_error->pos_start, invalid_syntax_error->pos_end, invalid_syntax_error->details);
-            }
-            
-            else if (auto rt_error = std::dynamic_pointer_cast<RTError>(temp_error))
-            {
-                error = std::make_shared<RTError>(rt_error->pos_start, rt_error->pos_end, rt_error->details, rt_error->context);
-            }
-
-            else if (auto no_error = std::dynamic_pointer_cast<NoError>(temp_error))
-            {
-                error = std::make_shared<NoError>();
-            }
-
-            else
-            {
-                error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", "");
-            }
+            SET_ERROR
         }
 
         if (error->error_name != "")
