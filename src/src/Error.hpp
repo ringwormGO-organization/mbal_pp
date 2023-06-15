@@ -26,8 +26,8 @@ class Error
         virtual std::string as_string();
 
         std::string error_name = "";
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start = std::make_shared<Position>(0, 0, 0, "", "");
+        std::shared_ptr<Position> pos_end = std::make_shared<Position>(0, 0, 0, "", "");
         std::string details = "";
 };
 

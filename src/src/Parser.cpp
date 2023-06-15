@@ -85,7 +85,7 @@ std::shared_ptr<ParseResult> Parser::parse()
         return res->failure (
             std::make_shared<InvalidSyntaxError> (
                 current_tok.pos_start, current_tok.pos_end,
-                "Expected '+', '-', '*'or '/'"
+                "Expected '+', '-', '*' or '/'"
             )
         );
     }
@@ -145,7 +145,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     return res->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
-        "Expected INT or FLOAT, '+', '-' or '('"
+        "Expected INT or FLOAT, identifier, 'VAR', '+', '-' or '('"
     ));
 }
 
@@ -229,9 +229,18 @@ std::shared_ptr<ParseResult> Parser::expr()
     }
 
     TT ops[2] {TT::PLUS, TT::MINUS};
-
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
-    return this->bin_op<2>(fac, ops);
+    
+    std::shared_ptr<ParseResult> node = this->bin_op<2>(fac, ops);
+    if (res->error->error_name != "") 
+    { 
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            current_tok.pos_start, current_tok.pos_end,
+            "Expected 'VAR', int, float, identifier, '+', '-', or '('"
+        )); 
+    }
+
+    return res->success(node->node);
 }
 
 template <int N>

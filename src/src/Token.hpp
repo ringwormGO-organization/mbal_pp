@@ -45,7 +45,7 @@ static const std::string KEYWORDS[] = {
 class Token
 {
     public:
-        Token(TT type, std::shared_ptr<Position> pos_start = nullptr, std::string value = "", std::shared_ptr<Position> pos_end = nullptr);
+        Token(TT type, std::shared_ptr<Position> pos_start = std::make_shared<Position>(0, 0, 0, "", ""), std::string value = "", std::shared_ptr<Position> pos_end = std::make_shared<Position>(0, 0, 0, "", ""));
         ~Token();
 
         bool matches(TT type, std::string value);
