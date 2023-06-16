@@ -20,9 +20,13 @@ class Position;
 class Number : public std::enable_shared_from_this<Number>
 {
     public:
-        Number(signed long value, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        Number(double value, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
         virtual ~Number();
 
+        /**
+         * Returns value as string
+         * @return std::string
+        */
         std::string repr();
 
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
@@ -44,7 +48,7 @@ class Number : public std::enable_shared_from_this<Number>
 
     public:
         std::shared_ptr<Error> error;
-        signed long value = 0;
+        double value = 0.0;
 
         std::shared_ptr<Position> pos_start;
         std::shared_ptr<Position> pos_end;

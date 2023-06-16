@@ -13,6 +13,12 @@
 class Position;
 class SymbolTable;
 
+/**
+ * Context class
+ * @param display_name display name
+ * @param parent parent
+ * @param parent_entry_pos parent entry position
+*/
 class Context
 {
     public:
@@ -23,5 +29,5 @@ class Context
         std::string display_name;
         std::shared_ptr<Context> parent;
         std::shared_ptr<Position> parent_entry_pos;
-        std::shared_ptr<SymbolTable> symbol_table;
+        std::shared_ptr<SymbolTable> symbol_table;          /* table containing symbols (variables) */
 };

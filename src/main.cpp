@@ -17,8 +17,17 @@
 #include "src/SymbolTable.hpp"
 #include "src/Token.hpp"
 
+/**
+ * Global symbols
+*/
 std::shared_ptr<SymbolTable> global_symbol_table = std::make_shared<SymbolTable>();
 
+/**
+ * Calls lexer, parser and interpreter
+ * @param fn name of function
+ * @param text input
+ * @return result (Number class) or error (Error class)
+*/
 std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn, std::string text)
 {
     /* Generate tokens */
@@ -54,6 +63,10 @@ std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn
     return interpreter_result->value;
 }
 
+/**
+ * Entry point
+ * @return zero
+*/
 int main()
 {
     std::string input;

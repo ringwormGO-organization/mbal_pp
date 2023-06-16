@@ -18,6 +18,12 @@ Interpreter::~Interpreter()
 
 }
 
+/**
+ * Finds type in `node` variable and calls appropriate functions (down below) or throws an exception
+ * @param node node
+ * @param context context
+ * @return std::shared_ptr<RTResult>
+*/
 std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     if (std::holds_alternative<std::shared_ptr<NumberNode>>(node))
@@ -53,7 +59,7 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
 
 std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
-    std::shared_ptr<Number> number = std::make_shared<Number>(std::stol(std::get<0>(node)->tok.value), context, std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
+    std::shared_ptr<Number> number = std::make_shared<Number>(std::stod(std::get<0>(node)->tok.value), context, std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
 
     std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
     return rt_result->success(number);

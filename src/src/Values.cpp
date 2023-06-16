@@ -11,7 +11,7 @@
 #include "Position.hpp"
 #include "Token.hpp"
 
-Number::Number(signed long value, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+Number::Number(double value, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
 {
     this->value = value;
 
@@ -26,9 +26,29 @@ Number::~Number()
 
 }
 
+/**
+ * Returns value as string
+ * @return std::string
+*/
 std::string Number::repr()
 {
-    return std::to_string(this->value);
+    std::string formatted_number = std::to_string(this->value);
+    size_t pos = formatted_number.find_last_not_of('0');
+
+    if (pos != std::string::npos) 
+    {
+        if (formatted_number[pos] == '.') 
+        {
+            formatted_number.erase(pos);
+        } 
+        
+        else 
+        {
+            formatted_number.erase(pos + 1);
+        }
+    }
+    
+    return formatted_number;
 }
 
 std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::added_to(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)

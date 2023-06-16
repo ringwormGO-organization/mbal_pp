@@ -25,6 +25,9 @@ Lexer::~Lexer()
 
 }
 
+/**
+ * Sets current_char variable to next character of user input
+*/
 void Lexer::advance()
 {
     if (this->first_run)
@@ -51,6 +54,10 @@ void Lexer::advance()
     }    
 }
 
+/**
+ * Make tokens
+ * @return std::tuple<std::vector<Token>, std::shared_ptr<Error>>
+*/
 std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
 {
     std::vector<Token> tokens;
@@ -153,6 +160,10 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
     return std::make_tuple(tokens, std::make_shared<NoError>());
 }
 
+/**
+ * Make number
+ * @return Token
+*/
 Token Lexer::make_number()
 {
     std::string num_str = "";
@@ -191,6 +202,10 @@ Token Lexer::make_number()
     }
 }
 
+/**
+ * Make identifier
+ * @return Token
+*/
 Token Lexer::make_identifier()
 {
     std::string id_str = "";
@@ -208,6 +223,10 @@ Token Lexer::make_identifier()
     return Token(tok_type, pos_start, id_str, this->pos);
 }
 
+/**
+ * Makes not equal stuff
+ * @return std::tuple<Token, std::shared_ptr<Error>>
+*/
 std::tuple<Token, std::shared_ptr<Error>> Lexer::make_not_equals()
 {
     std::shared_ptr<Position> pos_start = this->pos->copy();
@@ -223,6 +242,10 @@ std::tuple<Token, std::shared_ptr<Error>> Lexer::make_not_equals()
     return { Token(TT::NUL), std::make_shared<ExpectedCharError>(pos_start, this->pos, "'=' after ('!')") };
 }
 
+/**
+ * Makes equals stuff
+ * @return Token
+*/
 Token Lexer::make_equals()
 {
     TT tok_type = TT::EQ;
@@ -238,6 +261,10 @@ Token Lexer::make_equals()
     return Token(tok_type, pos_start, "", this->pos);
 }
 
+/**
+ * Makes less than stuff
+ * @return Token
+*/
 Token Lexer::make_less_than()
 {
     TT tok_type = TT::LT;
@@ -253,6 +280,10 @@ Token Lexer::make_less_than()
     return Token(tok_type, pos_start, "", this->pos);
 }
 
+/**
+ * Makes greater than stuff
+ * @return Token
+*/
 Token Lexer::make_greater_than()
 {
     TT tok_type = TT::GT;

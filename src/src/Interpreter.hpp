@@ -41,12 +41,21 @@
         error = std::make_shared<Error>(rt_error->pos_start, rt_error->pos_end, "", ""); \
     } \
 
+/**
+ * Class which runs the program
+*/
 class Interpreter
 {
     public:
         Interpreter();
         ~Interpreter();
 
+        /**
+         * Finds type in `node` variable and calls appropriate functions (down below) or throws an exception
+         * @param node node
+         * @param context context
+         * @return std::shared_ptr<RTResult>
+        */
         std::shared_ptr<RTResult> visit(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         std::shared_ptr<RTResult> visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context);

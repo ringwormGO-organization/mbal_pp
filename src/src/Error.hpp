@@ -17,12 +17,23 @@
 
 std::string string_with_arrows(std::string text, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
 
+/**
+ * Class handling errors
+ * @param pos_start starting position
+ * @param pos_end ending position
+ * @param error_name name of error (if empty, there is no error)
+ * @param details details of error
+*/
 class Error
 {
     public:
         Error(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end, std::string error_name, std::string details);
         virtual ~Error() {};
 
+        /**
+         * Returns all error details as std::string
+         * @return std::string
+        */
         virtual std::string as_string();
 
         std::string error_name = "";
@@ -31,24 +42,49 @@ class Error
         std::string details = "";
 };
 
+/**
+ * Class handling illegal character error
+ * @param pos_start starting position
+ * @param pos_end ending position
+ * @param details details of error
+*/
 class IllegalCharError : public Error
 {
     public:
         IllegalCharError(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end, std::string details) : Error(pos_start, pos_end, "Illegal Character", details) {};
 };
 
+/**
+ * Class handling expected character error
+ * @param pos_start starting position
+ * @param pos_end ending position
+ * @param details details of error
+*/
 class ExpectedCharError : public Error
 {
     public:
         ExpectedCharError(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end, std::string details) : Error(pos_start, pos_end, "Expected Character", details) {};
 };
 
+/**
+ * Class handling invalid syntax error
+ * @param pos_start starting position
+ * @param pos_end ending position
+ * @param details details of error
+*/
 class InvalidSyntaxError : public Error
 {
     public:
         InvalidSyntaxError(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end, std::string details) : Error(pos_start, pos_end, "Invalid Syntax", details) {};
 };
 
+/**
+ * Class handling runtime result error
+ * @param pos_start starting position
+ * @param pos_end ending position
+ * @param details details of error
+ * @param context context
+*/
 class RTError : public Error
 {
     public:
@@ -71,6 +107,11 @@ class RTError : public Error
         std::shared_ptr<Context> context;
 
     private:
+
+        /**
+         * Generates traceback
+         * @return std::string
+        */
         std::string generate_traceback()
         {
             std::string result = "";
@@ -90,6 +131,9 @@ class RTError : public Error
 
 };
 
+/**
+ * Placeholder when there is no error
+*/
 class NoError : public Error
 {
     public:
@@ -99,6 +143,9 @@ class NoError : public Error
 
 /* ---------------------------------------------------------------------------- */
 
+/**
+ * Class handling wrong type in `node` variable which is std::variant
+*/
 class InterpreterWrongType : public std::exception
 {
     public:
@@ -107,6 +154,9 @@ class InterpreterWrongType : public std::exception
         const char* what() const noexcept override { return "[InterpreterWrongType] Wrong type in `node` variable"; }
 };
 
+/**
+ * Class handling wrong type in `other` variable which is std::variant
+*/
 class ValueWrongType : public std::exception
 {
     public:

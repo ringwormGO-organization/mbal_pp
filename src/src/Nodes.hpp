@@ -22,6 +22,10 @@ class varAssignNode;
 class BinOpNode;
 class UnaryOpNode;
 
+/**
+ * Number node
+ * @param tok tok
+*/
 class NumberNode
 {
     public:
@@ -33,10 +37,14 @@ class NumberNode
     public:
         Token tok;
 
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
+/**
+ * Variable access node
+ * @param var_name_tok variable name token
+*/
 class VarAccessNode
 {
     public:
@@ -46,10 +54,15 @@ class VarAccessNode
     public:
         Token var_name_tok;
 
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
+/**
+ * Variable assign node
+ * @param var_name_tok variable name token
+ * @param value_node number node
+*/
 class VarAssignNode
 {
     public:
@@ -60,10 +73,16 @@ class VarAssignNode
         Token var_name_tok;
         std::shared_ptr<NumberNode> value_node;
         
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
+/**
+ * Binary operation node
+ * @param left_node left node
+ * @param op_tok operator tok
+ * @param right_node right node
+*/
 class BinOpNode
 {
     public:
@@ -77,10 +96,15 @@ class BinOpNode
         Token op_tok;
         ALL_VARIANT right_node;
 
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
+/**
+ * Unary operation node
+ * @param op_tok operator tok
+ * @param node node
+*/
 class UnaryOpNode
 {
     public:
@@ -93,6 +117,6 @@ class UnaryOpNode
         Token op_tok;
         ALL_VARIANT node;
 
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
 };
