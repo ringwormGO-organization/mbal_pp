@@ -33,6 +33,14 @@ enum TT
         IDENTIFIER,
         KEYWORD,
 
+    /* Comparison operators */
+        EE,
+        NE,
+        LT,
+        GT,
+        LTE,
+        GTE,
+
     /* Other */
         END_OF_FILE,
         NUL,
@@ -40,6 +48,9 @@ enum TT
 
 static const std::string KEYWORDS[] = {
     "VAR",
+    "AND",
+    "OR",
+    "NOT",
 };
 
 class Token

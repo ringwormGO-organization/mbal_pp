@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -55,16 +56,16 @@ class Parser
         std::shared_ptr<ParseResult> power();
         std::shared_ptr<ParseResult> factor();
         std::shared_ptr<ParseResult> term();
+        std::shared_ptr<ParseResult> arith_expr();
+        std::shared_ptr<ParseResult> comp_expr();
         std::shared_ptr<ParseResult> expr();
 
-        template <int N>
-        std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, TT ops[N], std::function<std::shared_ptr<ParseResult>()> func_b = nullptr);
+        std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, std::vector<std::pair<TT, std::string>>& ops, std::function<std::shared_ptr<ParseResult>()> func_b = nullptr);
 
         std::vector<Token> tokens;
     private:
         size_t tok_idx = 0;
         bool first_run = true;
 
-        template <int N>
-        bool contains(TT current, TT ops[N]);
+        bool contains(std::vector<std::pair<TT, std::string>>& ops, TT& type, std::string& value);
 };

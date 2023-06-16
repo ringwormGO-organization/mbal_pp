@@ -9,7 +9,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 2 - Parser
 - [x] EP 3 - Intepreter
 - [x] EP 4 - Variables
-- [ ] EP 5 - Comparasions and logical operators
+- [x] EP 5 - Comparisons and logical operators
 - [ ] EP 6 - IF statment
 - [ ] EP 7 - FOR and WHILE statment
 - [ ] EP 8 - Functions

@@ -31,6 +31,17 @@ class Number : public std::enable_shared_from_this<Number>
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> powed_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
 
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_eq(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_ne(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_lt(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_gt(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_lte(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> get_comparison_gte(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> anded_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> ored_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
+        std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> notted_by();
+
     public:
         std::shared_ptr<Error> error;
         signed long value = 0;

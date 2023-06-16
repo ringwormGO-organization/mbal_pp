@@ -10,6 +10,7 @@ OBJS += $(addprefix $(OBJDIR)/, $(patsubst src/%.cpp, %.o, $(wildcard src/*.cpp)
 BINFOLDER = $(OBJ)/executable
 BIN = $(BINFOLDER)/mbal++
 
+.PHONY: all
 all : $(OBJ) $(OBJDIR) $(BINFOLDER) $(BIN)
 
 $(OBJ):
@@ -30,11 +31,19 @@ $(OBJDIR)/%.o : src/%.cpp
 $(OBJDIR)/%.o : %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
+.PHONY: production
+production: CFLAGS := $(filter-out -g, $(CFLAGS))
+production: | all
+	@mv $(BINFOLDER)/mbal++ ../
+
+.PHONY: run
 run:
 	@./$(BIN)
 
+.PHONY: clean
 clean:
 	rm -rf $(wildcard *.o) objects
 
+.PHONY: full_clean
 full_clean:
 	rm -rf $(OBJ)

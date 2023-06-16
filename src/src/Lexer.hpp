@@ -31,6 +31,11 @@ class Lexer
 
         Token make_number();
         Token make_identifier();
+        
+        std::tuple<Token, std::shared_ptr<Error>> make_not_equals();
+        Token make_equals();
+        Token make_less_than();
+        Token make_greater_than();
 
     private:
         std::string fn = "";

@@ -94,3 +94,96 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::powed_by(std
     throw ValueWrongType();
     return { nullptr, nullptr };
 }
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_eq(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value == std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_ne(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value != std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_lt(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value < std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_gt(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value > std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_lte(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value <= std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::get_comparison_gte(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value >= std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::anded_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value && std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::ored_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Number>>(other))
+    {
+        return { std::make_shared<Number>((this->value || std::get<0>(other).get()->value), this->context), std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::notted_by()
+{
+    return { std::make_shared<Number>((this->value == 0) ? 1 : 0, this->context), std::make_shared<NoError>() };
+}

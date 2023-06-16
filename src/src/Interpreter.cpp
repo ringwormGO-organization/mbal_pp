@@ -152,6 +152,70 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             SET_ERROR
         }
 
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::EE)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_eq(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::NE)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_ne(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::LT)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_lt(right);
+
+            result = temp_result;
+            SET_ERROR 
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::GT)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_gt(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::LTE)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_lte(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::GTE)
+        {
+            auto [temp_result, temp_error] = left->get_comparison_gte(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, "AND"))
+        {
+            auto [temp_result, temp_error] = left->anded_by(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, "OR"))
+        {
+            auto [temp_result, temp_error] = left->ored_by(right);
+
+            result = temp_result;
+            SET_ERROR
+        }
+
         if (error->error_name != "")
         {
             return res->failure(error);
@@ -184,6 +248,14 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
         if (std::get<std::shared_ptr<UnaryOpNode>>(node)->op_tok.type == TT::MINUS)
         {
             auto [temp_number, temp_error] = number->multed_by(std::make_shared<Number>(-1));
+
+            number = temp_number;
+            SET_ERROR
+        }
+
+        else if (std::get<std::shared_ptr<UnaryOpNode>>(node)->op_tok.matches(TT::KEYWORD, "NOT"))
+        {
+            auto [temp_number, temp_error] = number->notted_by();
 
             number = temp_number;
             SET_ERROR

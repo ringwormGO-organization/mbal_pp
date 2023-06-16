@@ -68,7 +68,10 @@ int main()
             exit(0);
         }
 
-        global_symbol_table->set(std::string("null"), std::make_shared<Number>(0));
+        global_symbol_table->set(std::string("NULL"), std::make_shared<Number>(0));
+        global_symbol_table->set(std::string("TRUE"), std::make_shared<Number>(1));
+        global_symbol_table->set(std::string("FALSE"), std::make_shared<Number>(0));
+
         std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> result = run("<stdin>", input);
 
         if (std::holds_alternative<std::shared_ptr<Error>>(result))

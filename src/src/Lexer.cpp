@@ -103,12 +103,6 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             this->advance();
         }
 
-        else if (this->current_char == '=')
-        {
-            tokens.push_back(Token(TT::EQ, this->pos));
-            this->advance();
-        }
-
         else if (this->current_char == '(')
         {
             tokens.push_back(Token(TT::LPAREN, this->pos));
@@ -119,6 +113,29 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
         {
             tokens.push_back(Token(TT::RPAREN, this->pos));
             this->advance();
+        }
+
+        else if (this->current_char == '!')
+        {
+            auto [tok, error] = this->make_not_equals();
+
+            if (error->error_name != "") { return std::make_tuple(empty_vector, error); }
+            tokens.push_back(tok);
+        }
+
+        else if (this->current_char == '=')
+        {
+            tokens.push_back(this->make_equals());
+        }
+
+        else if (this->current_char == '<')
+        {
+            tokens.push_back(this->make_less_than());
+        }
+
+        else if (this->current_char == '>')
+        {
+            tokens.push_back(this->make_greater_than());
         }
 
         else
@@ -189,4 +206,64 @@ Token Lexer::make_identifier()
     (contains(KEYWORDS, id_str)) ? tok_type = TT::KEYWORD : tok_type = TT::IDENTIFIER;
 
     return Token(tok_type, pos_start, id_str, this->pos);
+}
+
+std::tuple<Token, std::shared_ptr<Error>> Lexer::make_not_equals()
+{
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+    this->advance();
+
+    if (this->current_char == '=')
+    {
+        this->advance();
+        return { Token(TT::NE, pos_start, "", this->pos), std::make_shared<NoError>() };
+    }
+
+    this->advance();
+    return { Token(TT::NUL), std::make_shared<ExpectedCharError>(pos_start, this->pos, "'=' after ('!')") };
+}
+
+Token Lexer::make_equals()
+{
+    TT tok_type = TT::EQ;
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+    this->advance();
+
+    if (this->current_char == '=')
+    {
+        this->advance();
+        tok_type = TT::EE;
+    }
+
+    return Token(tok_type, pos_start, "", this->pos);
+}
+
+Token Lexer::make_less_than()
+{
+    TT tok_type = TT::LT;
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+    this->advance();
+
+    if (this->current_char == '=')
+    {
+        this->advance();
+        tok_type = TT::LTE;
+    }
+
+    return Token(tok_type, pos_start, "", this->pos);
+}
+
+Token Lexer::make_greater_than()
+{
+    TT tok_type = TT::GT;
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+    this->advance();
+
+    if (this->current_char == '=')
+    {
+        this->advance();
+        tok_type = TT::GTE;
+    }
+
+    return Token(tok_type, pos_start, "", this->pos);
 }

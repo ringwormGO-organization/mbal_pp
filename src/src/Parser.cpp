@@ -157,12 +157,14 @@ std::shared_ptr<ParseResult> Parser::atom()
 
 std::shared_ptr<ParseResult> Parser::power()
 {
-    TT ops[1] {TT::POW};
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::POW, ""),
+    };
 
     std::function<std::shared_ptr<ParseResult>()> fac_a = [this]() { return this->atom(); };
     std::function<std::shared_ptr<ParseResult>()> fac_b = [this]() { return this->factor(); };
 
-    return this->bin_op<1>(fac_a, ops, fac_b);
+    return this->bin_op(fac_a, ops, fac_b);
 }
 
 std::shared_ptr<ParseResult> Parser::factor()
@@ -189,10 +191,64 @@ std::shared_ptr<ParseResult> Parser::factor()
 
 std::shared_ptr<ParseResult> Parser::term()
 {
-    TT ops[2] {TT::MUL, TT::DIV};
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::MUL, ""),
+        std::make_pair(TT::DIV, ""),
+    };
 
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->factor(); };
-    return this->bin_op<2>(fac, ops);
+    return this->bin_op(fac, ops);
+}
+
+std::shared_ptr<ParseResult> Parser::arith_expr()
+{
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::PLUS, ""),
+        std::make_pair(TT::MINUS, ""),
+    };
+    
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
+    return this->bin_op(fac, ops);
+}
+
+std::shared_ptr<ParseResult> Parser::comp_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (current_tok.matches(TT::KEYWORD, "NOT"))
+    {
+        Token op_tok = current_tok;
+
+        res->register_advancement();
+        this->advance();
+
+        ALL_VARIANT node = res->register_result(this->comp_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(std::make_shared<UnaryOpNode>(op_tok, node));
+    }
+
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::EE, ""),
+        std::make_pair(TT::NE, ""),
+        std::make_pair(TT::LT, ""),
+        std::make_pair(TT::GT, ""),
+        std::make_pair(TT::LTE, ""),
+        std::make_pair(TT::GTE, ""),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->arith_expr(); };
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
+
+    if (res->error->error_name != "") 
+    { 
+        return res->failure(std::make_shared<InvalidSyntaxError>(
+            current_tok.pos_start, current_tok.pos_end,
+            "Expected int, float, identifier, '+', '-', '(' or 'NOT'"
+        )); 
+    }
+
+    return res->success(node);
 }
 
 std::shared_ptr<ParseResult> Parser::expr()
@@ -234,23 +290,26 @@ std::shared_ptr<ParseResult> Parser::expr()
         return res->success(std::make_shared<VarAssignNode>(var_name, std::get<std::shared_ptr<NumberNode>>(expression)));
     }
 
-    TT ops[2] {TT::PLUS, TT::MINUS};
-    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
-    
-    ALL_VARIANT node = res->register_result(this->bin_op<2>(fac, ops));
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::KEYWORD, "AND"),
+        std::make_pair(TT::KEYWORD, "OR"),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->comp_expr(); };
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
+
     if (res->error->error_name != "") 
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             current_tok.pos_start, current_tok.pos_end,
-            "Expected 'VAR', int, float, identifier, '+', '-', or '('"
+            "Expected 'VAR', int, float, identifier, '+', '-', '(' or 'NOT'"
         )); 
     }
 
     return res->success(node);
 }
 
-template <int N>
-std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, TT ops[N], std::function<std::shared_ptr<ParseResult>()> func_b)
+std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, std::vector<std::pair<TT, std::string>>& ops, std::function<std::shared_ptr<ParseResult>()> func_b)
 {
     if (func_b == nullptr)
     {
@@ -261,7 +320,7 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
     auto left = res->register_result(func_a());
 
     if (res->error->error_name != "") return res;
-    while (this->contains<N>(current_tok.type, ops))
+    while (this->contains(ops, current_tok.type, current_tok.value))
     {
         Token op_tok = current_tok;
         
@@ -281,15 +340,16 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
     return res->success(left);
 }
 
-template <int N>
-bool Parser::contains(TT current, TT ops[N])
+bool Parser::contains(std::vector<std::pair<TT, std::string>>& ops, TT& type, std::string& value)
 {
-    for (size_t i = 0; i < N; i++)
+    for (auto &&i : ops)
     {
-        if (current == ops[i])
-        {
-            return true;
-        }
+        if (i.first == type) { return true; }
+    }
+
+    for (auto &&j : ops)
+    {
+        if (j.first == type && j.second == value) { return true; }
     }
 
     return false;
