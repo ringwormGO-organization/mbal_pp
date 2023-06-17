@@ -26,6 +26,8 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [ ] Standard library
 
 ### Our thing
+- [ ] Lowercase keywords
+- [ ] Colors
 - [ ] Generics
 - [ ] Self hosted
 

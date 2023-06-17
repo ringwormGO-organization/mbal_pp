@@ -151,7 +151,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     return res->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
-        "Expected INT or FLOAT, identifier, 'VAR', '+', '-' or '('"
+        "Expected int or float, identifier, 'LET', '+', '-' or '('"
     ));
 }
 
@@ -215,7 +215,7 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    if (current_tok.matches(TT::KEYWORD, "NOT"))
+    if (current_tok.matches(TT::KEYWORD, KEYWORDS[3]))
     {
         Token op_tok = current_tok;
 
@@ -255,7 +255,7 @@ std::shared_ptr<ParseResult> Parser::expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    if (current_tok.matches(TT::KEYWORD, "VAR"))
+    if (current_tok.matches(TT::KEYWORD, KEYWORDS[0]))
     {
         res->register_advancement();
         this->advance();
@@ -302,7 +302,7 @@ std::shared_ptr<ParseResult> Parser::expr()
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             current_tok.pos_start, current_tok.pos_end,
-            "Expected 'VAR', int, float, identifier, '+', '-', '(' or 'NOT'"
+            "Expected 'LET', int, float, identifier, '+', '-', '(' or 'NOT'"
         )); 
     }
 

@@ -47,7 +47,7 @@ enum TT
 };
 
 static const std::string KEYWORDS[] = {
-    "VAR",
+    "LET",
     "AND",
     "OR",
     "NOT",

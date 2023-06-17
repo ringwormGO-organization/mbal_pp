@@ -59,6 +59,11 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
 
 std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
+    if (std::get<0>(node) == nullptr)
+    {
+        throw NodeEmpty();
+    }
+
     std::shared_ptr<Number> number = std::make_shared<Number>(std::stod(std::get<0>(node)->tok.value), context, std::get<0>(node)->pos_start, std::get<0>(node)->pos_end);
 
     std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
@@ -82,7 +87,6 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
         ));
     }
 
-    
     std::get<std::shared_ptr<Number>>(value)->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
     std::get<std::shared_ptr<Number>>(value)->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
 
@@ -206,7 +210,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             SET_ERROR
         }
 
-        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, "AND"))
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, KEYWORDS[1]))
         {
             auto [temp_result, temp_error] = left->anded_by(right);
 
@@ -214,7 +218,7 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
             SET_ERROR
         }
 
-        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, "OR"))
+        else if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.matches(TT::KEYWORD, KEYWORDS[2]))
         {
             auto [temp_result, temp_error] = left->ored_by(right);
 

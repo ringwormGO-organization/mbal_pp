@@ -164,3 +164,14 @@ class ValueWrongType : public std::exception
 
         const char* what() const noexcept override { return "[ValueWrongType] Wrong type in `other` variable"; }
 };
+
+/**
+ * Class handling empty `node` variable due to incorrect initialization of variable
+*/
+class NodeEmpty : public std::exception
+{
+    public:
+        NodeEmpty() noexcept = default;
+
+        const char* what() const noexcept override { return "[NodeEmpty] `node` variable is empty\n\t   because of incorrect initialization of variable"; }
+};
