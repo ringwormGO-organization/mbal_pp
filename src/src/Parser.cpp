@@ -137,7 +137,7 @@ std::shared_ptr<ParseResult> Parser::atom()
             res->register_advancement();
             this->advance();
 
-            return res->success(std::get<2>(expr));
+            return res->success(std::get<std::shared_ptr<BinOpNode>>(expr));
         }
 
         else
