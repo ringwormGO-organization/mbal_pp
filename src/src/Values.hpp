@@ -46,6 +46,8 @@ class Number : public std::enable_shared_from_this<Number>
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> ored_by(std::variant<std::shared_ptr<Number>, std::nullptr_t> other);
         std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> notted_by();
 
+        std::shared_ptr<Number> copy();
+        bool is_true();
     public:
         std::shared_ptr<Error> error;
         double value = 0.0;

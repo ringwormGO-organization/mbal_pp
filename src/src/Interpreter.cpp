@@ -51,6 +51,11 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_UnaryOpNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<IfNode>>(node))
+    {
+        return this->visit_IfNode(node, context);
+    }
+
     else
     {
         throw InterpreterWrongType();
@@ -278,8 +283,8 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 
         else
         {
-            number->pos_start = std::get<2>(node)->pos_start;
-            number->pos_end = std::get<2>(node)->pos_end;
+            number->pos_start = std::get<std::shared_ptr<UnaryOpNode>>(node)->pos_start;
+            number->pos_end = std::get<std::shared_ptr<UnaryOpNode>>(node)->pos_end;
 
             return res->success(number);
         }
@@ -287,4 +292,34 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 
     throw InterpreterWrongType();
     return nullptr;
+}
+
+std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    for (auto const& [condition, expr] : std::get<std::shared_ptr<IfNode>>(node)->cases)
+    {
+        std::shared_ptr<Number> condition_value = res->register_result(this->visit(condition, context));
+        if (res->error->error_name != "") { return res; }
+
+        if (condition_value->is_true())
+        {
+            std::shared_ptr<Number> expr_value = res->register_result(this->visit(expr, context));
+            if (res->error->error_name != "") { return res; }
+
+            return res->success(expr_value);
+        }
+    }
+
+    bool is_empty = (std::get<std::shared_ptr<IfNode>>(node)->else_case == ALL_VARIANT{});
+    if (!is_empty)
+    {
+        std::shared_ptr<Number> else_value = res->register_result(this->visit(std::get<std::shared_ptr<IfNode>>(node)->else_case, context));
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(else_value);
+    }
+
+    return res->success(nullptr);
 }

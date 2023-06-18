@@ -36,13 +36,13 @@ VarAccessNode::~VarAccessNode()
 
 /* ---------------------------------------------------------------------------- */
 
-VarAssignNode::VarAssignNode(Token var_name_tok, std::shared_ptr<NumberNode> value_node) : var_name_tok(TT::NUL)
+VarAssignNode::VarAssignNode(Token var_name_tok, ALL_VARIANT value_node) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;
     this->value_node = value_node;
 
     this->pos_start = this->var_name_tok.pos_start;
-    this->pos_end = this->value_node->pos_end;
+    this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->value_node);
 }
 
 VarAssignNode::~VarAssignNode()
@@ -60,12 +60,12 @@ BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->left_node))
     {
-        this->pos_start = std::get<2>(this->left_node).get()->pos_start;
+        this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, left_node);
     }
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->right_node))
     {
-        this->pos_end = std::get<2>(this->right_node).get()->pos_start;
+        this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, right_node);
     }
 }
 
@@ -93,4 +93,23 @@ UnaryOpNode::~UnaryOpNode()
 std::string repr()
 {
     return "TODO";
+}
+
+/* ---------------------------------------------------------------------------- */
+
+IfNode::IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case)
+{
+    this->cases = cases;
+    this->else_case = else_case;
+
+    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, cases.at(0).first);
+
+    bool is_empty = (else_case == ALL_VARIANT{});
+    if (is_empty) { this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, cases.at(cases.size() - 1).first); }
+    else { this->pos_end =  std::visit([](auto&& arg) { return arg->pos_end; }, else_case); }
+}
+
+IfNode::~IfNode()
+{
+
 }

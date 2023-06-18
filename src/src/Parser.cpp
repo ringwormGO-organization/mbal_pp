@@ -41,7 +41,7 @@ std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
 
 std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 {
-    if (this->error->error_name == "" && this->advance_count == 0) /* there is no error and therefore error_name is empty */
+    if (this->error->error_name == "" || this->advance_count == 0) /* there is no error and therefore error_name is empty */
     {
         this->error = error;
     }
@@ -51,7 +51,7 @@ std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 
 /* ---------------------------------------------------------------------------- */
 
-Parser::Parser(std::vector<Token> tokens)
+Parser::Parser(std::vector<Token> tokens) : current_tok(TT::NUL)
 {
     this->tokens = tokens;
     this->advance();
@@ -66,7 +66,7 @@ Token Parser::advance()
 {
     if (this->first_run)
     {
-        first_run = false;
+        this->first_run = false;
     }
 
     else
@@ -76,22 +76,22 @@ Token Parser::advance()
 
     if (this->tok_idx < this->tokens.size())
     {
-        current_tok = this->tokens[this->tok_idx];
+        this->current_tok = this->tokens[this->tok_idx];
     }
 
-    return current_tok;
+    return this->current_tok;
 }
 
 std::shared_ptr<ParseResult> Parser::parse()
 {
     std::shared_ptr<ParseResult> res = this->expr();
 
-    if (res->error->error_name == "" && current_tok.type != TT::END_OF_FILE)
+    if (res->error->error_name == "" && this->current_tok.type != TT::END_OF_FILE)
     {
         return res->failure (
             std::make_shared<InvalidSyntaxError> (
-                current_tok.pos_start, current_tok.pos_end,
-                "Expected '+', '-', '*' or '/'"
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'AND' or 'OR'"
             )
         );
     }
@@ -99,10 +99,83 @@ std::shared_ptr<ParseResult> Parser::parse()
     return res;
 }
 
+std::shared_ptr<ParseResult> Parser::if_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+    std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
+    ALL_VARIANT else_case;
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[4]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'IF'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT condition = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'THEN'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT expr = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    cases.push_back(std::make_pair(condition, expr));
+
+    while (this->current_tok.matches(TT::KEYWORD, KEYWORDS[6]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        condition = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+
+        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected 'THEN'"
+            ));
+        }
+
+        res->register_advancement();
+        this->advance();
+
+        expr = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+
+        cases.push_back(std::make_pair(condition, expr));
+    }
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[7]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        else_case = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+    }
+
+    return res->success(std::make_shared<IfNode>(cases, else_case));
+}
+
 std::shared_ptr<ParseResult> Parser::atom()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    Token tok = current_tok;
+    Token tok = this->current_tok;
 
     if (tok.type == TT::INT || tok.type == TT::FLOAT)
     {
@@ -126,32 +199,36 @@ std::shared_ptr<ParseResult> Parser::atom()
         this->advance();
 
         auto expr = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
 
-        if (res->error->error_name != "")
-        {
-            return res;
-        }
-
-        if (current_tok.type == TT::RPAREN)
+        if (this->current_tok.type == TT::RPAREN)
         {
             res->register_advancement();
             this->advance();
 
-            return res->success(std::get<std::shared_ptr<BinOpNode>>(expr));
+            return res->success(expr);
         }
 
         else
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
-                current_tok.pos_start, current_tok.pos_end,
+                this->current_tok.pos_start, this->current_tok.pos_end,
                 "Expected ')'"
             ));
         }
     }
 
+    else if (tok.matches(TT::KEYWORD, KEYWORDS[4]))
+    {
+        ALL_VARIANT if_expr = res->register_result(this->if_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(if_expr);
+    }
+
     return res->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
-        "Expected int or float, identifier, 'LET', '+', '-' or '('"
+        "Expected int or float, identifier, '+', '-' or '('"
     ));
 }
 
@@ -170,7 +247,7 @@ std::shared_ptr<ParseResult> Parser::power()
 std::shared_ptr<ParseResult> Parser::factor()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    Token tok = current_tok;
+    Token tok = this->current_tok;
 
     if (tok.type == TT::PLUS || tok.type == TT::MINUS)
     {
@@ -178,12 +255,9 @@ std::shared_ptr<ParseResult> Parser::factor()
         this->advance();
 
         auto factor = res->register_result(this->factor());
-        if (res->error->error_name != "")
-        {
-            return res;
-        }
+        if (res->error->error_name != "") { return res; }
 
-        return res->success(std::make_shared<UnaryOpNode>(tok, std::get<2>(factor)));
+        return res->success(std::make_shared<UnaryOpNode>(tok, factor));
     }
 
     return this->power();
@@ -215,9 +289,9 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    if (current_tok.matches(TT::KEYWORD, KEYWORDS[3]))
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[3]))
     {
-        Token op_tok = current_tok;
+        Token op_tok = this->current_tok;
 
         res->register_advancement();
         this->advance();
@@ -243,7 +317,7 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
     if (res->error->error_name != "") 
     { 
         return res->failure(std::make_shared<InvalidSyntaxError>(
-            current_tok.pos_start, current_tok.pos_end,
+            this->current_tok.pos_start, this->current_tok.pos_end,
             "Expected int, float, identifier, '+', '-', '(' or 'NOT'"
         )); 
     }
@@ -255,28 +329,28 @@ std::shared_ptr<ParseResult> Parser::expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    if (current_tok.matches(TT::KEYWORD, KEYWORDS[0]))
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[0]))
     {
         res->register_advancement();
         this->advance();
         
-        if (current_tok.type != TT::IDENTIFIER)
+        if (this->current_tok.type != TT::IDENTIFIER)
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
-                current_tok.pos_start, current_tok.pos_end,
+                this->current_tok.pos_start, this->current_tok.pos_end,
                 "Expected an identifier"
             ));
         }
 
-        Token var_name = current_tok;
+        Token var_name = this->current_tok;
 
         res->register_advancement();
         this->advance();
 
-        if (current_tok.type != TT::EQ)
+        if (this->current_tok.type != TT::EQ)
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
-                current_tok.pos_start, current_tok.pos_end,
+                this->current_tok.pos_start, this->current_tok.pos_end,
                 "Expected '='"
             ));
         }
@@ -285,9 +359,9 @@ std::shared_ptr<ParseResult> Parser::expr()
         this->advance();
 
         auto expression = res->register_result(this->expr());
-
         if (res->error->error_name != "") { return res; }
-        return res->success(std::make_shared<VarAssignNode>(var_name, std::get<std::shared_ptr<NumberNode>>(expression)));
+
+        return res->success(std::make_shared<VarAssignNode>(var_name, expression));
     }
 
     std::vector<std::pair<TT, std::string>> ops = {
@@ -301,7 +375,7 @@ std::shared_ptr<ParseResult> Parser::expr()
     if (res->error->error_name != "") 
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
-            current_tok.pos_start, current_tok.pos_end,
+            this->current_tok.pos_start, this->current_tok.pos_end,
             "Expected 'LET', int, float, identifier, '+', '-', '(' or 'NOT'"
         )); 
     }
@@ -319,16 +393,16 @@ std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseR
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
     auto left = res->register_result(func_a());
 
-    if (res->error->error_name != "") return res;
-    while (this->contains(ops, current_tok.type, current_tok.value))
+    if (res->error->error_name != "") { return res; }
+    while (this->contains(ops, this->current_tok.type, this->current_tok.value))
     {
-        Token op_tok = current_tok;
+        Token op_tok = this->current_tok;
         
         res->register_advancement();
         this->advance();
 
         auto right = res->register_result(func_b());
-        if (res->error->error_name != "") return res;
+        if (res->error->error_name != "") { return res; }
 
         left = std::make_shared<BinOpNode> (
             left,
@@ -344,12 +418,7 @@ bool Parser::contains(std::vector<std::pair<TT, std::string>>& ops, TT& type, st
 {
     for (auto &&i : ops)
     {
-        if (i.first == type) { return true; }
-    }
-
-    for (auto &&j : ops)
-    {
-        if (j.first == type && j.second == value) { return true; }
+        if (i.first == type && i.second == value) { return true; }
     }
 
     return false;

@@ -22,8 +22,6 @@
 
 #define PARSE_REGISTER_TYPES std::variant<Token, std::shared_ptr<ParseResult>, ALL_VARIANT>
 
-static Token current_tok = Token(TT::NUL);
-
 class ParseResult : public std::enable_shared_from_this<ParseResult>
 {
     public:
@@ -52,6 +50,7 @@ class Parser
         Token advance();
         std::shared_ptr<ParseResult> parse();
 
+        std::shared_ptr<ParseResult> if_expr();
         std::shared_ptr<ParseResult> atom();
         std::shared_ptr<ParseResult> power();
         std::shared_ptr<ParseResult> factor();
@@ -64,6 +63,8 @@ class Parser
 
         std::vector<Token> tokens;
     private:
+        Token current_tok;
+
         size_t tok_idx = 0;
         bool first_run = true;
 

@@ -47,10 +47,19 @@ enum TT
 };
 
 static const std::string KEYWORDS[] = {
-    "LET",
-    "AND",
-    "OR",
-    "NOT",
+    /* Declaring variables */
+        "LET",
+    
+    /* Logical operators */
+        "AND",
+        "OR",
+        "NOT",
+
+    /* IF statments */
+        "IF",
+        "THEN",
+        "ELSE IF",
+        "ELSE",
 };
 
 class Token

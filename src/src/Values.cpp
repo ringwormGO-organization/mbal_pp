@@ -207,3 +207,13 @@ std::tuple<std::shared_ptr<Number>, std::shared_ptr<Error>> Number::notted_by()
 {
     return { std::make_shared<Number>((this->value == 0) ? 1 : 0, this->context), std::make_shared<NoError>() };
 }
+
+std::shared_ptr<Number> Number::copy()
+{
+    return std::shared_ptr<Number>(shared_from_this());
+}
+
+bool Number::is_true()
+{
+    return this->value != 0;
+}

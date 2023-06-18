@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -21,6 +22,7 @@ class VarAccessNode;
 class varAssignNode;
 class BinOpNode;
 class UnaryOpNode;
+class IfNode;
 
 /**
  * Number node
@@ -61,17 +63,17 @@ class VarAccessNode
 /**
  * Variable assign node
  * @param var_name_tok variable name token
- * @param value_node number node
+ * @param value_node node
 */
 class VarAssignNode
 {
     public:
-        VarAssignNode(Token var_name_tok, std::shared_ptr<NumberNode> value_node);
+        VarAssignNode(Token var_name_tok, ALL_VARIANT value_node);
         ~VarAssignNode();
 
     public:
         Token var_name_tok;
-        std::shared_ptr<NumberNode> value_node;
+        ALL_VARIANT value_node;
         
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
@@ -116,6 +118,25 @@ class UnaryOpNode
     public:
         Token op_tok;
         ALL_VARIANT node;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node for IF statment
+ * @param cases cases for IF statment
+ * @param else_case case for ELSE statment
+*/
+class IfNode
+{
+    public:
+        IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case);
+        ~IfNode();
+
+    public:
+        std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
+        ALL_VARIANT else_case;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
