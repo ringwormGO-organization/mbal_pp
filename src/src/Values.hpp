@@ -20,7 +20,7 @@ class Position;
 class Number : public std::enable_shared_from_this<Number>
 {
     public:
-        Number(double value, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        Number(double value=0.0, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
         virtual ~Number();
 
         /**

@@ -113,3 +113,38 @@ IfNode::~IfNode()
 {
 
 }
+
+/* ---------------------------------------------------------------------------- */
+
+ForNode::ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node) : var_name_tok(TT::NUL)
+{
+    this->var_name_tok = var_name_tok;
+    this->start_value_node = start_value_node;
+    this->end_value_node = end_value_node;
+    this->step_value_node = step_value_node;
+    this->body_node = body_node;
+
+    this->pos_start = this->var_name_tok.pos_start;
+    this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->body_node);
+}
+
+ForNode::~ForNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+WhileNode::WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node)
+{
+    this->condition_node = condition_node;
+    this->body_node = body_node;
+
+    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->condition_node);
+    this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->body_node);
+}
+
+WhileNode::~WhileNode()
+{
+
+}

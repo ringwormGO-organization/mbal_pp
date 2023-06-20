@@ -64,4 +64,6 @@ class Interpreter
         std::shared_ptr<RTResult> visit_BinaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context);
         std::shared_ptr<RTResult> visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context);
         std::shared_ptr<RTResult> visit_IfNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+        std::shared_ptr<RTResult> visit_ForNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+        std::shared_ptr<RTResult> visit_WhileNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 };

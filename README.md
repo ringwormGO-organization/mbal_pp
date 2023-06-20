@@ -11,7 +11,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 4 - Variables
 - [x] EP 5 - Comparisons and logical operators
 - [x] EP 6 - IF statment
-- [ ] EP 7 - FOR and WHILE statment
+- [X] EP 7 - FOR and WHILE statment
 - [ ] EP 8 - Functions
 - [ ] EP 9 - Strings
 - [ ] EP 10 - Lists
@@ -28,6 +28,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 ### Our thing
 - [ ] Lowercase keywords
 - [ ] Colors
+- [ ] `DO` keyword
 - [ ] Generics
 - [ ] Self hosted
 

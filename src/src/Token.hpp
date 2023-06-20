@@ -60,6 +60,12 @@ static const std::string KEYWORDS[] = {
         "THEN",
         "ELSE IF",
         "ELSE",
+
+    /* FOR and WHILE statment */
+        "FOR",
+        "UNTIL",
+        "STEP",
+        "WHILE",
 };
 
 class Token

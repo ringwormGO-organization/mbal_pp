@@ -51,6 +51,8 @@ class Parser
         std::shared_ptr<ParseResult> parse();
 
         std::shared_ptr<ParseResult> if_expr();
+        std::shared_ptr<ParseResult> for_expr();
+        std::shared_ptr<ParseResult> while_expr();
         std::shared_ptr<ParseResult> atom();
         std::shared_ptr<ParseResult> power();
         std::shared_ptr<ParseResult> factor();

@@ -56,6 +56,16 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_IfNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<ForNode>>(node))
+    {
+        return this->visit_ForNode(node, context);
+    }
+
+    else if (std::holds_alternative<std::shared_ptr<WhileNode>>(node))
+    {
+        return this->visit_WhileNode(node, context);
+    }
+
     else
     {
         throw InterpreterWrongType();
@@ -322,4 +332,63 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
     }
 
     return res->success(nullptr);
+}
+
+std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    std::shared_ptr<Number> start_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->start_value_node, context));
+    if (res->error->error_name != "") { return res; }
+
+    std::shared_ptr<Number> end_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->end_value_node, context));
+    if (res->error->error_name != "") { return res; }
+
+    std::shared_ptr<Number> step_value = std::make_shared<Number>(1);
+    if (std::get<std::shared_ptr<ForNode>>(node)->step_value_node != ALL_VARIANT{}) /* check if step_value_node is empty */
+    {
+        step_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->step_value_node, context));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    double i = start_value->value;
+    auto condition = [](double step_value, double _i, double end_value_value) 
+    {
+        if (step_value >= 0)
+        {
+            return _i < end_value_value;
+        }
+
+        return _i > end_value_value;
+    };
+
+    while (condition(step_value->value, i, end_value->value))
+    {
+        context->symbol_table->set(std::get<std::shared_ptr<ForNode>>(node)->var_name_tok.value, std::make_shared<Number>(i));
+
+        i += step_value->value;
+
+        res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->body_node, context));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    return res->success(std::make_shared<Number>(0));
+}
+
+std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    while (true)
+    {
+        std::shared_ptr<Number> condition = res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->condition_node, context));
+        if (res->error->error_name != "") { return res; }
+
+        if (!condition->is_true()) break;
+
+        res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    return res->success(std::make_shared<Number>(0));
 }

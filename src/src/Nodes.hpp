@@ -23,6 +23,8 @@ class varAssignNode;
 class BinOpNode;
 class UnaryOpNode;
 class IfNode;
+class ForNode;
+class WhileNode;
 
 /**
  * Number node
@@ -137,6 +139,50 @@ class IfNode
     public:
         std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
         ALL_VARIANT else_case;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node for FOR statment
+ * @param var_name_tok variable name token
+ * @param start_value_node node holding start value
+ * @param end_value_node node holding end value
+ * @param step_value_node node holding step value
+ * @param body_node node holding body
+*/
+class ForNode
+{
+    public:
+        ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node);
+        ~ForNode();
+
+    public:
+        Token var_name_tok;
+        ALL_VARIANT start_value_node;
+        ALL_VARIANT end_value_node;
+        ALL_VARIANT step_value_node;
+        ALL_VARIANT body_node;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node for WHILE statment
+ * @param condition_node node holding condition
+ * @param body_node node holding body of WHILE statment
+*/
+class WhileNode
+{
+    public:
+        WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node);
+        ~WhileNode();
+
+    public:
+        ALL_VARIANT condition_node;
+        ALL_VARIANT body_node;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */

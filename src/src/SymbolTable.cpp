@@ -28,6 +28,7 @@ std::variant<std::shared_ptr<Number>, std::nullptr_t> SymbolTable::get_value(std
 
 void SymbolTable::set(std::string name, std::variant<std::shared_ptr<Number>, std::nullptr_t> value)
 {
+    this->remove(name);
     this->symbols.insert({ name, value });
 }
 

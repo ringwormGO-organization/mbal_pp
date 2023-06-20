@@ -172,6 +172,121 @@ std::shared_ptr<ParseResult> Parser::if_expr()
     return res->success(std::make_shared<IfNode>(cases, else_case));
 }
 
+std::shared_ptr<ParseResult> Parser::for_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (!this->current_tok.matches(TT::KEYWORD, "FOR"))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'FOR'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    if (this->current_tok.type != TT::IDENTIFIER)
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected identifier"
+        ));
+    }
+
+    Token var_name = this->current_tok;
+
+    res->register_advancement();
+    this->advance();
+
+    if (current_tok.type != TT::EQ)
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected '='"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT start_value = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[9]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'UNTIL'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT end_value = res->register_result(this->expr());
+    ALL_VARIANT step_value;
+
+    if (res->error->error_name != "") { return res; }
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[10]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        step_value = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+    }
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'THEN'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT body = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body));
+}
+
+std::shared_ptr<ParseResult> Parser::while_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[11]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'WHILE'"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT condition = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'THEN'"
+        ));
+    }
+
+    ALL_VARIANT body = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    return res->success(std::make_shared<WhileNode>(condition, body));
+}
+
 std::shared_ptr<ParseResult> Parser::atom()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
@@ -224,6 +339,22 @@ std::shared_ptr<ParseResult> Parser::atom()
         if (res->error->error_name != "") { return res; }
 
         return res->success(if_expr);
+    }
+
+    else if (tok.matches(TT::KEYWORD, KEYWORDS[8]))
+    {
+        ALL_VARIANT for_expr = res->register_result(this->for_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(for_expr);
+    }
+
+    else if (tok.matches(TT::KEYWORD, KEYWORDS[11]))
+    {
+        ALL_VARIANT while_expr = res->register_result(this->while_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(while_expr);
     }
 
     return res->failure(std::make_shared<InvalidSyntaxError>(
