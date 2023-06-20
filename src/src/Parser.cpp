@@ -281,6 +281,9 @@ std::shared_ptr<ParseResult> Parser::while_expr()
         ));
     }
 
+    res->register_advancement();
+    this->advance();
+
     ALL_VARIANT body = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
