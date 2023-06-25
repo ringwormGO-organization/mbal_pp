@@ -53,6 +53,12 @@ class Lexer
          * @return Token
         */
         Token make_identifier();
+
+        /**
+         * Make `-` operator or `->`
+         * @return Token
+        */
+        Token make_minus_or_arrow();
         
         /**
          * Makes not equal stuff

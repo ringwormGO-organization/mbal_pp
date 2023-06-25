@@ -6,18 +6,31 @@
 
 #include "SymbolTable.hpp"
 
-std::variant<std::shared_ptr<Number>, std::nullptr_t> SymbolTable::get_value(std::string name)
+SymbolTable::SymbolTable(std::shared_ptr<Context> parent)
 {
-    std::variant<std::shared_ptr<Number>, std::nullptr_t> value;
+    if (parent != nullptr)
+    {
+        this->parent = parent;
+    }
+}
 
-    std::map<std::string, std::variant<std::shared_ptr<Number>, std::nullptr_t>>::const_iterator pos = this->symbols.find(name);
+SymbolTable::~SymbolTable()
+{
     
-    if (pos == symbols.end() && this->parent.type() != typeid(std::nullptr_t))
+}
+
+std::variant<std::shared_ptr<Value>, std::nullptr_t> SymbolTable::get_value(std::string name)
+{
+    std::variant<std::shared_ptr<Value>, std::nullptr_t> value;
+
+    std::map<std::string, std::variant<std::shared_ptr<Value>, std::nullptr_t>>::const_iterator pos = this->symbols.find(name);
+    
+    if (pos == symbols.end() && this->parent->display_name != "")
     {
         /* TODO */
     }
 
-    else if (pos == symbols.end() && this->parent.type() == typeid(std::nullptr_t))
+    else if (pos == symbols.end() && this->parent->display_name != "")
     {
         return nullptr;
     }
@@ -26,7 +39,7 @@ std::variant<std::shared_ptr<Number>, std::nullptr_t> SymbolTable::get_value(std
     return value;
 }
 
-void SymbolTable::set(std::string name, std::variant<std::shared_ptr<Number>, std::nullptr_t> value)
+void SymbolTable::set(std::string name, std::variant<std::shared_ptr<Value>, std::nullptr_t> value)
 {
     this->remove(name);
     this->symbols.insert({ name, value });

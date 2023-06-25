@@ -19,13 +19,15 @@
 
 class NumberNode;
 class VarAccessNode;
-class varAssignNode;
+class VarAssignNode;
 class BinOpNode;
 class UnaryOpNode;
 class IfNode;
 class ForNode;
 class WhileNode;
 class DoNode;
+class FuncDefNode;
+class CallNode;
 
 /**
  * Number node
@@ -191,7 +193,7 @@ class WhileNode
 
 /**
  * Node for DO statment, very similar to WHILE statment
- * @param body_node node holding body of WHILE statment
+ * @param body_node node holding body of DO statment
  * @param condition_node node holding condition
 */
 class DoNode
@@ -203,6 +205,46 @@ class DoNode
     public:
         ALL_VARIANT condition_node;
         ALL_VARIANT body_node;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node holding functions
+ * @param var_name_tok variable name of token
+ * @param arg_name_toks vector holding arguments as Token class, a.k.a tokens
+ * @param body_node node holding body of function; code which is executed, code which returns a value to caller
+*/
+class FuncDefNode
+{
+    public:
+        FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node);
+        ~FuncDefNode();
+
+    public:
+        Token var_name_tok;
+        std::vector<Token> arg_name_toks;
+        ALL_VARIANT body_node;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node handling function call
+ * @param node_to_call node which is intended for calling
+ * @param arg_nodes nodes' arguments
+*/
+class CallNode
+{
+    public:
+        CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes);
+        ~CallNode();
+
+    public:
+        ALL_VARIANT node_to_call;
+        std::vector<ALL_VARIANT> arg_nodes;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */

@@ -121,4 +121,18 @@ class Interpreter
          * @param context context
         */
         std::shared_ptr<RTResult> visit_DoNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+
+        /**
+         * Function handling functions
+         * @param node node
+         * @param context context
+        */
+        std::shared_ptr<RTResult> visit_FuncDefNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+
+        /**
+         * Function handling function call
+         * @param node node
+         * @param context context
+        */
+        std::shared_ptr<RTResult> visit_CallNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 };

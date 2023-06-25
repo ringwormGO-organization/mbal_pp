@@ -16,7 +16,7 @@ RTResult::~RTResult()
 
 }
 
-std::shared_ptr<Number> RTResult::register_result(std::shared_ptr<RTResult> res)
+std::shared_ptr<Value> RTResult::register_result(std::shared_ptr<RTResult> res)
 {
     if (res->error->error_name != "")
     {
@@ -26,7 +26,7 @@ std::shared_ptr<Number> RTResult::register_result(std::shared_ptr<RTResult> res)
     return res->value;
 }
 
-std::shared_ptr<RTResult> RTResult::success(std::shared_ptr<Number> value)
+std::shared_ptr<RTResult> RTResult::success(std::shared_ptr<Value> value)
 {
     this->value = value;
     return std::shared_ptr<RTResult>(shared_from_this());

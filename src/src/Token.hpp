@@ -41,6 +41,10 @@ enum TT
         LTE,
         GTE,
 
+    /* Functions */
+        COMMA,
+        ARROW,
+
     /* Other */
         END_OF_FILE,
         NUL,
@@ -67,6 +71,9 @@ static const std::string KEYWORDS[] = {
         "STEP",
         "WHILE",
         "DO",
+
+    /* Functions */
+        "FN"
 };
 
 class Token

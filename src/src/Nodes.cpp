@@ -164,3 +164,41 @@ DoNode::~DoNode()
 {
 
 }
+
+/* ---------------------------------------------------------------------------- */
+
+FuncDefNode::FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node) : var_name_tok(TT::NUL)
+{
+    this->var_name_tok = var_name_tok;
+    this->arg_name_toks = arg_name_toks;
+    this->body_node = body_node;
+
+    if (this->var_name_tok.type != TT::NUL) { this->pos_start = this->var_name_tok.pos_start; }
+    else if (this->arg_name_toks.size() > 0) { this->pos_start = this->arg_name_toks.at(0).pos_start; }
+    else {this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->body_node); }
+
+    this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->body_node);
+}
+
+FuncDefNode::~FuncDefNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+CallNode::CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes)
+{
+    this->node_to_call = node_to_call;
+    this->arg_nodes = arg_nodes;
+
+    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->node_to_call);
+
+    if (this->arg_nodes.size() > 0) { this->pos_end = std::visit([](auto&& arg) { return arg->pos_start; }, this->arg_nodes.at(this->arg_nodes.size() - 1)); }
+    else { this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->node_to_call); }
+}
+
+CallNode::~CallNode()
+{
+
+}

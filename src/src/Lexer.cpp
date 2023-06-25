@@ -88,8 +88,7 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
 
         else if (this->current_char == '-')
         {
-            tokens.push_back(Token(TT::MINUS, this->pos));
-            this->advance();
+            tokens.push_back(this->make_minus_or_arrow());
         }
 
         else if (this->current_char == '*')
@@ -143,6 +142,12 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
         else if (this->current_char == '>')
         {
             tokens.push_back(this->make_greater_than());
+        }
+
+        else if (this->current_char == ',')
+        {
+            tokens.push_back(Token(TT::COMMA, this->pos));
+            this->advance();
         }
 
         else
@@ -221,6 +226,25 @@ Token Lexer::make_identifier()
     (contains(KEYWORDS, id_str)) ? tok_type = TT::KEYWORD : tok_type = TT::IDENTIFIER;
 
     return Token(tok_type, pos_start, id_str, this->pos);
+}
+
+/**
+ * Make `-` operator or `->`
+ * @return Token
+*/
+Token Lexer::make_minus_or_arrow()
+{
+    TT tok_type = TT::MINUS;
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+    this->advance();
+
+    if (this->current_char == '>')
+    {
+        this->advance();
+        tok_type = TT::ARROW;
+    }
+
+    return Token(tok_type, pos_start, "", this->pos);
 }
 
 /**

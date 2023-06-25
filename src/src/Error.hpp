@@ -175,3 +175,14 @@ class NodeEmpty : public std::exception
 
         const char* what() const noexcept override { return "[NodeEmpty] `node` variable is empty\n\t   because of incorrect initialization of variable"; }
 };
+
+/**
+ * Class handling exception when copy function is not defined cause by not being able to call derived class
+*/
+class NoCopy : public std::exception
+{
+    public:
+        NoCopy() noexcept = default;
+
+        const char* what() const noexcept override { return "[NoCopy] Function `copy` is not defined because I am not able to call any derived class"; }
+};

@@ -28,7 +28,7 @@ std::shared_ptr<SymbolTable> global_symbol_table = std::make_shared<SymbolTable>
  * @param text input
  * @return result (Number class) or error (Error class)
 */
-std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> run(std::string fn, std::string text)
+std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> run(std::string fn, std::string text)
 {
     /* Generate tokens */
     Lexer lexer(fn, text);
@@ -85,7 +85,7 @@ int main()
         global_symbol_table->set(std::string("TRUE"), std::make_shared<Number>(1));
         global_symbol_table->set(std::string("FALSE"), std::make_shared<Number>(0));
 
-        std::variant<std::shared_ptr<Number>, std::shared_ptr<Error>> result = run("<stdin>", input);
+        std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> result = run("<stdin>", input);
 
         if (std::holds_alternative<std::shared_ptr<Error>>(result))
         {
@@ -94,7 +94,16 @@ int main()
 
         else
         {
-            std::cout << std::get<0>(result)->repr();
+            if (auto temporary = std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result)))
+            {
+                std::cout << std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result))->repr();
+            }
+
+            else if (auto temporary = std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result)))
+            {
+                std::cout << std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result))->repr();
+            }
+            
             std::cout << '\n';
         }
     }

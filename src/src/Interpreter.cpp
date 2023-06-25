@@ -71,6 +71,16 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_DoNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<FuncDefNode>>(node))
+    {
+        return this->visit_FuncDefNode(node, context);
+    }
+
+    else if (std::holds_alternative<std::shared_ptr<CallNode>>(node))
+    {
+        return this->visit_CallNode(node, context);
+    }
+
     else
     {
         throw InterpreterWrongType();
@@ -105,7 +115,7 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
     std::string var_name = std::get<std::shared_ptr<VarAccessNode>>(node)->var_name_tok.value;
-    std::variant<std::shared_ptr<Number>, std::nullptr_t> value = context->symbol_table->get_value(var_name);
+    std::variant<std::shared_ptr<Value>, std::nullptr_t> value = context->symbol_table->get_value(var_name);
 
     std::string details = var_name += std::string(" is not defined");
     if (std::holds_alternative<std::nullptr_t>(value))
@@ -117,10 +127,10 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
         ));
     }
 
-    std::get<std::shared_ptr<Number>>(value)->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
-    std::get<std::shared_ptr<Number>>(value)->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
+    std::get<std::shared_ptr<Value>>(value)->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
+    std::get<std::shared_ptr<Value>>(value)->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
 
-    std::shared_ptr<Number> new_value = std::get<std::shared_ptr<Number>>(value);
+    std::shared_ptr<Value> new_value = std::get<std::shared_ptr<Value>>(value);
     return res->success(new_value);
 }
 
@@ -134,7 +144,7 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAssignNode(ALL_VARIANT node, std
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
     std::string var_name = std::get<std::shared_ptr<VarAssignNode>>(node)->var_name_tok.value;
-    std::shared_ptr<Number> value = res->register_result(this->visit(std::get<std::shared_ptr<VarAssignNode>>(node)->value_node, context));
+    std::shared_ptr<Value> value = res->register_result(this->visit(std::get<std::shared_ptr<VarAssignNode>>(node)->value_node, context));
 
     if (res->error->error_name != "") { return res; }
 
@@ -151,16 +161,16 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    std::shared_ptr<Number> left = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->left_node, context));
+    std::shared_ptr<Value> left = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->left_node, context));
     if (res->error->error_name != "") { return res; }
 
-    std::shared_ptr<Number> right = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->right_node, context));
+    std::shared_ptr<Value> right = res->register_result(this->visit(std::get<std::shared_ptr<BinOpNode>>(node)->right_node, context));
     if (res->error->error_name != "") { return res; }
 
     if (std::holds_alternative<std::shared_ptr<BinOpNode>>(node))
     {
         std::shared_ptr<Error> error = std::make_shared<NoError>();
-        std::shared_ptr<Number> result;
+        std::shared_ptr<Value> result;
 
         if (std::get<std::shared_ptr<BinOpNode>>(node)->op_tok.type == TT::PLUS)
         {
@@ -293,7 +303,7 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    std::shared_ptr<Number> number = res->register_result(this->visit(std::get<std::shared_ptr<UnaryOpNode>>(node)->node, context));
+    std::shared_ptr<Value> number = res->register_result(this->visit(std::get<std::shared_ptr<UnaryOpNode>>(node)->node, context));
     if (res->error->error_name != "") { return res; }
 
     std::shared_ptr<Error> error = std::make_shared<NoError>();
@@ -345,12 +355,12 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
 
     for (auto const& [condition, expr] : std::get<std::shared_ptr<IfNode>>(node)->cases)
     {
-        std::shared_ptr<Number> condition_value = res->register_result(this->visit(condition, context));
+        std::shared_ptr<Value> condition_value = res->register_result(this->visit(condition, context));
         if (res->error->error_name != "") { return res; }
 
         if (condition_value->is_true())
         {
-            std::shared_ptr<Number> expr_value = res->register_result(this->visit(expr, context));
+            std::shared_ptr<Value> expr_value = res->register_result(this->visit(expr, context));
             if (res->error->error_name != "") { return res; }
 
             return res->success(expr_value);
@@ -360,7 +370,7 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
     bool is_empty = (std::get<std::shared_ptr<IfNode>>(node)->else_case == ALL_VARIANT{});
     if (!is_empty)
     {
-        std::shared_ptr<Number> else_value = res->register_result(this->visit(std::get<std::shared_ptr<IfNode>>(node)->else_case, context));
+        std::shared_ptr<Value> else_value = res->register_result(this->visit(std::get<std::shared_ptr<IfNode>>(node)->else_case, context));
         if (res->error->error_name != "") { return res; }
 
         return res->success(else_value);
@@ -378,16 +388,16 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    std::shared_ptr<Number> start_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->start_value_node, context));
+    std::shared_ptr<Number> start_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->start_value_node, context)));
     if (res->error->error_name != "") { return res; }
 
-    std::shared_ptr<Number> end_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->end_value_node, context));
+    std::shared_ptr<Number> end_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->end_value_node, context)));
     if (res->error->error_name != "") { return res; }
 
     std::shared_ptr<Number> step_value = std::make_shared<Number>(1);
     if (std::get<std::shared_ptr<ForNode>>(node)->step_value_node != ALL_VARIANT{}) /* check if step_value_node is empty */
     {
-        step_value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->step_value_node, context));
+        step_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->step_value_node, context)));
         if (res->error->error_name != "") { return res; }
     }
 
@@ -426,7 +436,7 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
 
     while (true)
     {
-        std::shared_ptr<Number> condition = res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->condition_node, context));
+        std::shared_ptr<Number> condition = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->condition_node, context)));
         if (res->error->error_name != "") { return res; }
 
         if (!condition->is_true()) break;
@@ -449,7 +459,7 @@ std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::share
 
     while (true)
     {
-        std::shared_ptr<Number> condition = res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->condition_node, context));
+        std::shared_ptr<Number> condition = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->condition_node, context)));
         if (res->error->error_name != "") { return res; }
 
         if (!condition->is_true()) break;
@@ -459,4 +469,66 @@ std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::share
     }
 
     return res->success(std::make_shared<Number>(0));
+}
+
+/**
+ * Function handling functions
+ * @param node node
+ * @param context context
+*/
+std::shared_ptr<RTResult> Interpreter::visit_FuncDefNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    std::string func_name = std::get<std::shared_ptr<FuncDefNode>>(node)->var_name_tok.value;
+    ALL_VARIANT body_node = std::get<std::shared_ptr<FuncDefNode>>(node)->body_node;
+
+    std::vector<std::string> arg_names;
+    for (auto &&i : std::get<std::shared_ptr<FuncDefNode>>(node)->arg_name_toks)
+    {
+        arg_names.push_back(i.value);
+    }
+    
+    std::shared_ptr<Function> func_value = std::make_shared<Function>(func_name, body_node, arg_names);
+
+    func_value->context = context;
+    func_value->pos_start = std::get<std::shared_ptr<FuncDefNode>>(node)->pos_start;
+    func_value->pos_end = std::get<std::shared_ptr<FuncDefNode>>(node)->pos_end;
+
+    if (std::get<std::shared_ptr<FuncDefNode>>(node)->var_name_tok.type != TT::NUL)
+    {
+        context->symbol_table->set(func_name, func_value);
+    }
+
+    return res->success(func_value);
+}
+
+/**
+ * Function handling function call
+ * @param node node
+ * @param context context
+*/
+std::shared_ptr<RTResult> Interpreter::visit_CallNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::vector<std::shared_ptr<Value>> args;
+
+    std::shared_ptr<Function> value_to_call = std::dynamic_pointer_cast<Function>(res->register_result(this->visit(std::get<std::shared_ptr<CallNode>>(node)->node_to_call, context)));
+    if (res->error->error_name != "") { return res; }
+
+    value_to_call = std::dynamic_pointer_cast<Function>(value_to_call->copy());
+    
+    value_to_call->pos_start = std::get<std::shared_ptr<CallNode>>(node)->pos_start;
+    value_to_call->pos_end = std::get<std::shared_ptr<CallNode>>(node)->pos_end;
+
+    for (auto &&arg_node : std::get<std::shared_ptr<CallNode>>(node)->arg_nodes)
+    {
+        args.push_back(res->register_result(this->visit(arg_node, context)));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    std::shared_ptr<Value> return_value = res->register_result(value_to_call->execute(args));
+    if (res->error->error_name != "") { return res; }
+
+    return res->success(return_value);
 }

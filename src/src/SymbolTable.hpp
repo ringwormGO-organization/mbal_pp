@@ -6,25 +6,26 @@
 
 #pragma once
 
-#include <any>
 #include <iostream>
 #include <map>
 #include <string>
 #include <variant>
 
+#include "Context.hpp"
+#include "Position.hpp"
 #include "Values.hpp"
 
 class SymbolTable
 {
     public:
-        SymbolTable() {};
-        virtual ~SymbolTable() {};
+        SymbolTable(std::shared_ptr<Context> context=nullptr);
+        virtual ~SymbolTable();
 
-        std::variant<std::shared_ptr<Number>, std::nullptr_t> get_value(std::string name);
-        void set(std::string name, std::variant<std::shared_ptr<Number>, std::nullptr_t> value);
+        std::variant<std::shared_ptr<Value>, std::nullptr_t> get_value(std::string name);
+        void set(std::string name, std::variant<std::shared_ptr<Value>, std::nullptr_t> value);
         void remove(std::string name);
 
     public:
-        std::map<std::string, std::variant<std::shared_ptr<Number>, std::nullptr_t>> symbols;
-        std::any parent = nullptr;
+        std::map<std::string, std::variant<std::shared_ptr<Value>, std::nullptr_t>> symbols;
+        std::shared_ptr<Context> parent = std::make_shared<Context>("");
 };
