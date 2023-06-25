@@ -290,6 +290,46 @@ std::shared_ptr<ParseResult> Parser::while_expr()
     return res->success(std::make_shared<WhileNode>(condition, body));
 }
 
+std::shared_ptr<ParseResult> Parser::do_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[12]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'DO'"
+        ));
+    }
+
+    /* Go to body of statment */
+    res->register_advancement();
+    this->advance();
+
+    /* Body */
+    ALL_VARIANT body = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    /* We do not need to advance since we last call was `expr()` function */
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[11]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'WHILE'"
+        ));
+    }
+
+    /* Go to condition of statment */
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT condition = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    return res->success(std::make_shared<DoNode>(body, condition));
+}
+
 std::shared_ptr<ParseResult> Parser::atom()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
@@ -358,6 +398,14 @@ std::shared_ptr<ParseResult> Parser::atom()
         if (res->error->error_name != "") { return res; }
 
         return res->success(while_expr);
+    }
+
+    else if (tok.matches(TT::KEYWORD, KEYWORDS[12]))
+    {
+        ALL_VARIANT do_expr = res->register_result(this->do_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(do_expr);
     }
 
     return res->failure(std::make_shared<InvalidSyntaxError>(

@@ -19,7 +19,7 @@ Interpreter::~Interpreter()
 }
 
 /**
- * Finds type in `node` variable and calls appropriate functions (down below) or throws an exception
+ * Finds type in `node` variable and calls appropriate functions or throws an exception
  * @param node node
  * @param context context
  * @return std::shared_ptr<RTResult>
@@ -66,12 +66,22 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_WhileNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<DoNode>>(node))
+    {
+        return this->visit_DoNode(node, context);
+    }
+
     else
     {
         throw InterpreterWrongType();
     }
 }
 
+/**
+ * Function handling numbers
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     if (std::get<0>(node) == nullptr)
@@ -85,6 +95,11 @@ std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::s
     return rt_result->success(number);
 }
 
+/**
+ * Function handling variable access
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -109,6 +124,11 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
     return res->success(new_value);
 }
 
+/**
+ * Function handling creation of variable
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_VarAssignNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -122,6 +142,11 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAssignNode(ALL_VARIANT node, std
     return res->success(value);
 }
 
+/**
+ * Function handling binary operation
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -259,6 +284,11 @@ std::shared_ptr<RTResult> Interpreter::visit_BinaryOpNode(ALL_VARIANT node, std:
     return nullptr;
 }
 
+/**
+ * Function handling unary operation
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -304,6 +334,11 @@ std::shared_ptr<RTResult> Interpreter::visit_UnaryOpNode(ALL_VARIANT node, std::
     return nullptr;
 }
 
+/**
+ * Function handling IF statment
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -334,6 +369,11 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
     return res->success(nullptr);
 }
 
+/**
+ * Function handling FOR statment
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -375,6 +415,11 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
     return res->success(std::make_shared<Number>(0));
 }
 
+/**
+ * Function handling WHILE statment
+ * @param node node
+ * @param context context
+*/
 std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
@@ -387,6 +432,29 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
         if (!condition->is_true()) break;
 
         res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    return res->success(std::make_shared<Number>(0));
+}
+
+/**
+ * Function handling DO statment, very similar to `visit_WhileNode()` function
+ * @param node node
+ * @param context context
+*/
+std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    while (true)
+    {
+        std::shared_ptr<Number> condition = res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->condition_node, context));
+        if (res->error->error_name != "") { return res; }
+
+        if (!condition->is_true()) break;
+
+        res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->body_node, context));
         if (res->error->error_name != "") { return res; }
     }
 

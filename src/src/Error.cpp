@@ -91,6 +91,10 @@ Error::Error(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_
     this->details = details;
 }
 
+/**
+ * Returns all error details as std::string
+ * @return std::string
+*/
 std::string Error::as_string()
 {
     std::string result = (this->error_name += ": ") += this->details += "\n";

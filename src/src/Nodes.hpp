@@ -25,6 +25,7 @@ class UnaryOpNode;
 class IfNode;
 class ForNode;
 class WhileNode;
+class DoNode;
 
 /**
  * Number node
@@ -179,6 +180,25 @@ class WhileNode
     public:
         WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node);
         ~WhileNode();
+
+    public:
+        ALL_VARIANT condition_node;
+        ALL_VARIANT body_node;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node for DO statment, very similar to WHILE statment
+ * @param body_node node holding body of WHILE statment
+ * @param condition_node node holding condition
+*/
+class DoNode
+{
+    public:
+        DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node);
+        ~DoNode();
 
     public:
         ALL_VARIANT condition_node;

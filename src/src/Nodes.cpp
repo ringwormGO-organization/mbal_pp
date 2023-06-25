@@ -148,3 +148,19 @@ WhileNode::~WhileNode()
 {
 
 }
+
+/* ---------------------------------------------------------------------------- */
+
+DoNode::DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node)
+{
+    this->body_node = body_node;
+    this->condition_node = condition_node;
+
+    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->body_node);
+    this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->condition_node);
+}
+
+DoNode::~DoNode()
+{
+
+}
