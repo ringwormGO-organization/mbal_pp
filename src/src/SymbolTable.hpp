@@ -15,6 +15,8 @@
 #include "Position.hpp"
 #include "Values.hpp"
 
+class Context;
+
 class SymbolTable
 {
     public:
@@ -27,5 +29,5 @@ class SymbolTable
 
     public:
         std::map<std::string, std::variant<std::shared_ptr<Value>, std::nullptr_t>> symbols;
-        std::shared_ptr<Context> parent = std::make_shared<Context>("");
+        std::shared_ptr<Context> parent;
 };

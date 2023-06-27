@@ -99,6 +99,158 @@ std::shared_ptr<ParseResult> Parser::parse()
     return res;
 }
 
+/* ------------------------------------ */
+
+std::shared_ptr<ParseResult> Parser::expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[0]))
+    {
+        res->register_advancement();
+        this->advance();
+        
+        if (this->current_tok.type != TT::IDENTIFIER)
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected an identifier"
+            ));
+        }
+
+        Token var_name = this->current_tok;
+
+        res->register_advancement();
+        this->advance();
+
+        if (this->current_tok.type != TT::EQ)
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected '='"
+            ));
+        }
+
+        res->register_advancement();
+        this->advance();
+
+        auto expression = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(std::make_shared<VarAssignNode>(var_name, expression));
+    }
+
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::KEYWORD, "AND"),
+        std::make_pair(TT::KEYWORD, "OR"),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->comp_expr(); };
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
+
+    if (res->error->error_name != "") 
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'LET', int, float, identifier, '+', '-', '(' or 'NOT'"
+        )); 
+    }
+
+    return res->success(node);
+}
+
+std::shared_ptr<ParseResult> Parser::comp_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[3]))
+    {
+        Token op_tok = this->current_tok;
+
+        res->register_advancement();
+        this->advance();
+
+        ALL_VARIANT node = res->register_result(this->comp_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(std::make_shared<UnaryOpNode>(op_tok, node));
+    }
+
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::EE, ""),
+        std::make_pair(TT::NE, ""),
+        std::make_pair(TT::LT, ""),
+        std::make_pair(TT::GT, ""),
+        std::make_pair(TT::LTE, ""),
+        std::make_pair(TT::GTE, ""),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->arith_expr(); };
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
+
+    if (res->error->error_name != "") 
+    { 
+        return res->failure(std::make_shared<InvalidSyntaxError>(
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected int, float, identifier, '+', '-', '(' or 'NOT'"
+        )); 
+    }
+
+    return res->success(node);
+}
+
+std::shared_ptr<ParseResult> Parser::arith_expr()
+{
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::PLUS, ""),
+        std::make_pair(TT::MINUS, ""),
+    };
+    
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
+    return this->bin_op(fac, ops);
+}
+
+std::shared_ptr<ParseResult> Parser::term()
+{
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::MUL, ""),
+        std::make_pair(TT::DIV, ""),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->factor(); };
+    return this->bin_op(fac, ops);
+}
+
+std::shared_ptr<ParseResult> Parser::factor()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+    Token tok = this->current_tok;
+
+    if (tok.type == TT::PLUS || tok.type == TT::MINUS)
+    {
+        res->register_advancement();
+        this->advance();
+
+        auto factor = res->register_result(this->factor());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(std::make_shared<UnaryOpNode>(tok, factor));
+    }
+
+    return this->power();
+}
+
+std::shared_ptr<ParseResult> Parser::power()
+{
+    std::vector<std::pair<TT, std::string>> ops = {
+        std::make_pair(TT::POW, ""),
+    };
+
+    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->call(); };
+
+    return this->bin_op(fac, ops);
+}
+
 std::shared_ptr<ParseResult> Parser::call()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
@@ -247,157 +399,6 @@ std::shared_ptr<ParseResult> Parser::atom()
         tok.pos_start, tok.pos_end,
         "Expected int or float, identifier, '+', '-' or '('"
     ));
-}
-
-std::shared_ptr<ParseResult> Parser::power()
-{
-    std::vector<std::pair<TT, std::string>> ops = {
-        std::make_pair(TT::POW, ""),
-    };
-
-    std::function<std::shared_ptr<ParseResult>()> fac_a = [this]() { return this->atom(); };
-    std::function<std::shared_ptr<ParseResult>()> fac_b = [this]() { return this->factor(); };
-
-    return this->bin_op(fac_a, ops, fac_b);
-}
-
-std::shared_ptr<ParseResult> Parser::factor()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    Token tok = this->current_tok;
-
-    if (tok.type == TT::PLUS || tok.type == TT::MINUS)
-    {
-        res->register_advancement();
-        this->advance();
-
-        auto factor = res->register_result(this->factor());
-        if (res->error->error_name != "") { return res; }
-
-        return res->success(std::make_shared<UnaryOpNode>(tok, factor));
-    }
-
-    return this->power();
-}
-
-std::shared_ptr<ParseResult> Parser::term()
-{
-    std::vector<std::pair<TT, std::string>> ops = {
-        std::make_pair(TT::MUL, ""),
-        std::make_pair(TT::DIV, ""),
-    };
-
-    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->factor(); };
-    return this->bin_op(fac, ops);
-}
-
-std::shared_ptr<ParseResult> Parser::arith_expr()
-{
-    std::vector<std::pair<TT, std::string>> ops = {
-        std::make_pair(TT::PLUS, ""),
-        std::make_pair(TT::MINUS, ""),
-    };
-    
-    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->term(); };
-    return this->bin_op(fac, ops);
-}
-
-std::shared_ptr<ParseResult> Parser::comp_expr()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[3]))
-    {
-        Token op_tok = this->current_tok;
-
-        res->register_advancement();
-        this->advance();
-
-        ALL_VARIANT node = res->register_result(this->comp_expr());
-        if (res->error->error_name != "") { return res; }
-
-        return res->success(std::make_shared<UnaryOpNode>(op_tok, node));
-    }
-
-    std::vector<std::pair<TT, std::string>> ops = {
-        std::make_pair(TT::EE, ""),
-        std::make_pair(TT::NE, ""),
-        std::make_pair(TT::LT, ""),
-        std::make_pair(TT::GT, ""),
-        std::make_pair(TT::LTE, ""),
-        std::make_pair(TT::GTE, ""),
-    };
-
-    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->arith_expr(); };
-    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
-
-    if (res->error->error_name != "") 
-    { 
-        return res->failure(std::make_shared<InvalidSyntaxError>(
-            this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected int, float, identifier, '+', '-', '(' or 'NOT'"
-        )); 
-    }
-
-    return res->success(node);
-}
-
-std::shared_ptr<ParseResult> Parser::expr()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[0]))
-    {
-        res->register_advancement();
-        this->advance();
-        
-        if (this->current_tok.type != TT::IDENTIFIER)
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected an identifier"
-            ));
-        }
-
-        Token var_name = this->current_tok;
-
-        res->register_advancement();
-        this->advance();
-
-        if (this->current_tok.type != TT::EQ)
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected '='"
-            ));
-        }
-
-        res->register_advancement();
-        this->advance();
-
-        auto expression = res->register_result(this->expr());
-        if (res->error->error_name != "") { return res; }
-
-        return res->success(std::make_shared<VarAssignNode>(var_name, expression));
-    }
-
-    std::vector<std::pair<TT, std::string>> ops = {
-        std::make_pair(TT::KEYWORD, "AND"),
-        std::make_pair(TT::KEYWORD, "OR"),
-    };
-
-    std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->comp_expr(); };
-    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
-
-    if (res->error->error_name != "") 
-    {
-        return res->failure(std::make_shared<InvalidSyntaxError> (
-            this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected 'LET', int, float, identifier, '+', '-', '(' or 'NOT'"
-        )); 
-    }
-
-    return res->success(node);
 }
 
 std::shared_ptr<ParseResult> Parser::if_expr()
@@ -649,7 +650,7 @@ std::shared_ptr<ParseResult> Parser::func_def()
     Token var_name_tok = Token(TT::NUL);
     if (this->current_tok.type == TT::IDENTIFIER)
     {
-        Token var_name_tok = this->current_tok;
+        var_name_tok = this->current_tok;
 
         res->register_advancement();
         this->advance();

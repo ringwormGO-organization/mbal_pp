@@ -12,6 +12,11 @@ SymbolTable::SymbolTable(std::shared_ptr<Context> parent)
     {
         this->parent = parent;
     }
+
+    else
+    {
+        this->parent = std::make_shared<Context>("");
+    }
 }
 
 SymbolTable::~SymbolTable()
