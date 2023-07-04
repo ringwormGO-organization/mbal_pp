@@ -31,6 +31,11 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_NumberNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<StringNode>>(node))
+    {
+        return this->visit_StringNode(node, context);
+    }
+
     else if (std::holds_alternative<std::shared_ptr<VarAccessNode>>(node))
     {
         return this->visit_VarAccessNode(node, context);
@@ -103,6 +108,24 @@ std::shared_ptr<RTResult> Interpreter::visit_NumberNode(ALL_VARIANT node, std::s
 
     std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
     return rt_result->success(number);
+}
+
+/**
+ * Function handling strings
+ * @param node node
+ * @param context context
+*/
+std::shared_ptr<RTResult> Interpreter::visit_StringNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    if (std::get<std::shared_ptr<StringNode>>(node) == nullptr)
+    {
+        throw NodeEmpty();
+    }
+
+    std::shared_ptr<String> str = std::make_shared<String>(std::get<std::shared_ptr<StringNode>>(node)->tok.value, context, std::get<std::shared_ptr<StringNode>>(node)->pos_start, std::get<std::shared_ptr<StringNode>>(node)->pos_end);
+
+    std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
+    return rt_result->success(str);
 }
 
 /**

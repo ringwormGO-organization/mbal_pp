@@ -13,7 +13,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 6 - IF statment
 - [X] EP 7 - FOR and WHILE statment
 - [x] EP 8 - Functions
-- [ ] EP 9 - Strings
+- [x] EP 9 - Strings
 - [ ] EP 10 - Lists
 - [ ] EP 11 - Built-in Functions
 - [ ] EP 12 - Mutli-line statments

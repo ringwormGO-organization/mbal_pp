@@ -18,6 +18,7 @@
 #include "define.hpp"
 
 class NumberNode;
+class StringNode;
 class VarAccessNode;
 class VarAssignNode;
 class BinOpNode;
@@ -38,6 +39,25 @@ class NumberNode
     public:
         NumberNode(Token tok);
         virtual ~NumberNode() {};
+
+        std::string repr();
+
+    public:
+        Token tok;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * String node
+ * @param tok tok
+*/
+class StringNode
+{
+    public:
+        StringNode(Token tok);
+        virtual ~StringNode() {};
 
         std::string repr();
 

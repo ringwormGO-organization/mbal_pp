@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -47,6 +48,12 @@ class Lexer
          * @return Token
         */
         Token make_number();
+
+        /**
+         * Make string
+         * @return Token
+        */
+        Token make_string();
 
         /**
          * Make identifier

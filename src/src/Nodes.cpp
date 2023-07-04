@@ -21,6 +21,21 @@ std::string NumberNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
+StringNode::StringNode(Token tok) : tok(tok)
+{
+    this->tok = tok;
+
+    this->pos_start = this->tok.pos_start;
+    this->pos_end = this->tok.pos_end;
+}
+
+std::string StringNode::repr()
+{
+    return tok.repr();
+}
+
+/* ---------------------------------------------------------------------------- */
+
 VarAccessNode::VarAccessNode(Token var_name_tok) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;

@@ -80,6 +80,11 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             tokens.push_back(this->make_identifier());
         }
 
+        else if (this->current_char == '\"')
+        {
+            tokens.push_back(this->make_string());
+        }
+
         else if (this->current_char == '+')
         {
             tokens.push_back(Token(TT::PLUS, this->pos));
@@ -205,6 +210,50 @@ Token Lexer::make_number()
     {
         return Token(TT::FLOAT, pos_start, num_str, this->pos);
     }
+}
+
+/**
+ * Make string
+ * @return Token
+*/
+Token Lexer::make_string()
+{
+    std::string str = "";
+    std::shared_ptr<Position> pos_start = this->pos->copy();
+
+    bool escape_character = false;
+    this->advance();
+
+    std::map<char, char> escape_characters = {
+        {'n', '\n'},
+        {'t', '\t'},
+    };
+
+    while (this->current_char != '\0' && (this->current_char != '\"' || escape_character))
+    {
+        if (escape_character)
+        {
+            std::map<char, char>::const_iterator it = escape_characters.find(this->current_char);
+            if (it != escape_characters.end())
+            {
+                str += std::string(1, it->second);
+            }
+
+            str += std::string(1, this->current_char);
+        }
+
+        else
+        {
+            if (this->current_char == '\\') { escape_character = true; }
+            else { str += this->current_char; }
+        }
+
+        this->advance();
+        escape_character = false;
+    }
+
+    this->advance();
+    return Token(TT::STRING, pos_start, str, this->pos);
 }
 
 /**

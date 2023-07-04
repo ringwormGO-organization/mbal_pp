@@ -322,6 +322,14 @@ std::shared_ptr<ParseResult> Parser::atom()
         return res->success(std::make_shared<NumberNode>(tok));
     }
 
+    else if (tok.type == TT::STRING)
+    {
+        res->register_advancement();
+        this->advance();
+
+        return res->success(std::make_shared<StringNode>(tok));
+    }
+
     else if (tok.type == TT::IDENTIFIER)
     {
         res->register_advancement();

@@ -437,6 +437,81 @@ bool Number::is_true()
 
 /* ---------------------------------------------------------------------------- */
 
+String::String(std::string value, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->value = value;
+}
+
+String::~String()
+{
+
+}
+
+/**
+ * Returns value as string
+ * @return std::string
+*/
+std::string String::repr()
+{
+    return this->value;
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        if (auto number = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other)))
+        {
+            return { std::make_shared<String>(this->value += std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other))->value, this->context), std::make_shared<NoError>() };
+        }
+
+        else
+        {
+            return { nullptr, Value::illegal_operation(other) };
+        }
+    }
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        if (auto number = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other)))
+        {
+            return { std::make_shared<String>(this->multiply_string(this->value, std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other))->value), this->context), std::make_shared<NoError>() };
+        }
+
+        else
+        {
+            return { nullptr, Value::illegal_operation(other) };
+        }
+    }
+}
+
+bool String::is_true()
+{
+    return (this->value.size() > 0);
+}
+
+std::shared_ptr<Value> String::copy()
+{
+    return std::enable_shared_from_this<Value>::shared_from_this();
+}
+
+std::string String::multiply_string(std::string str, double times)
+{
+    std::string ret = "";
+
+    for (double i = 0; i < times; i++)
+    {
+        ret += str;
+    }
+
+    return ret;
+}
+
+/* ---------------------------------------------------------------------------- */
+
 Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names)
 {
     if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }

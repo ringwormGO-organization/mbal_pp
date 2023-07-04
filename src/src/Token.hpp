@@ -16,6 +16,7 @@ enum TT
     /* Variable type */
         INT,
         FLOAT,
+        STRING,
 
     /* Operators */
         PLUS,

@@ -17,6 +17,7 @@
 #include "define.hpp"
 
 class NumberNode;
+class StringNode;
 class VarAccessNode;
 class VarAssignNode;
 class BinOpNode;
@@ -114,6 +115,33 @@ class Number : public Value
 };
 
 static const std::shared_ptr<Number> EMPTY_NUMBER;
+
+/* ---------------------------------------------------------------------------- */
+
+class String : public Value
+{
+    public:
+        String(std::string value="", std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        ~String();
+
+        /**
+         * Returns value as string
+         * @return std::string
+        */
+        std::string repr();
+
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+
+        bool is_true() override;
+        std::shared_ptr<Value> copy() override;
+
+    public:
+        std::string value = "";
+
+    private:
+        std::string multiply_string(std::string str, double times);
+};
 
 /* ---------------------------------------------------------------------------- */
 
