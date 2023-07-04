@@ -131,7 +131,6 @@ class String : public Value
         std::string repr();
 
         std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
-        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
 
         bool is_true() override;
         std::shared_ptr<Value> copy() override;

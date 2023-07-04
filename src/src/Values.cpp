@@ -440,6 +440,10 @@ bool Number::is_true()
 String::String(std::string value, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
 {
     this->value = value;
+
+    if (pos_start != nullptr) { this->pos_start = pos_start; }
+    if (pos_end != nullptr) { this->pos_end = pos_end; }
+    if (context != nullptr) { this->context = context; }
 }
 
 String::~String()
@@ -470,22 +474,9 @@ std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::added_to(std:
             return { nullptr, Value::illegal_operation(other) };
         }
     }
-}
 
-std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
-{
-    if (std::holds_alternative<std::shared_ptr<Value>>(other))
-    {
-        if (auto number = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other)))
-        {
-            return { std::make_shared<String>(this->multiply_string(this->value, std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other))->value), this->context), std::make_shared<NoError>() };
-        }
-
-        else
-        {
-            return { nullptr, Value::illegal_operation(other) };
-        }
-    }
+    throw ValueWrongType();
+    return { nullptr, nullptr };
 }
 
 bool String::is_true()
