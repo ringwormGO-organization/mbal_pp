@@ -52,19 +52,20 @@ class Parser
         Token advance();
         std::shared_ptr<ParseResult> parse();
 
+        std::shared_ptr<ParseResult> expr();
+        std::shared_ptr<ParseResult> comp_expr();
+        std::shared_ptr<ParseResult> arith_expr();
+        std::shared_ptr<ParseResult> term();
+        std::shared_ptr<ParseResult> factor();
+        std::shared_ptr<ParseResult> power();
+        std::shared_ptr<ParseResult> call();
+        std::shared_ptr<ParseResult> atom();
+        std::shared_ptr<ParseResult> list_expr();
         std::shared_ptr<ParseResult> if_expr();
         std::shared_ptr<ParseResult> for_expr();
         std::shared_ptr<ParseResult> while_expr();
-        std::shared_ptr<ParseResult> func_def();
         std::shared_ptr<ParseResult> do_expr();
-        std::shared_ptr<ParseResult> call();
-        std::shared_ptr<ParseResult> atom();
-        std::shared_ptr<ParseResult> power();
-        std::shared_ptr<ParseResult> factor();
-        std::shared_ptr<ParseResult> term();
-        std::shared_ptr<ParseResult> arith_expr();
-        std::shared_ptr<ParseResult> comp_expr();
-        std::shared_ptr<ParseResult> expr();
+        std::shared_ptr<ParseResult> func_def();
 
         std::shared_ptr<ParseResult> bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, std::vector<std::pair<TT, std::string>>& ops, std::function<std::shared_ptr<ParseResult>()> func_b = nullptr);
 

@@ -126,6 +126,18 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             this->advance();
         }
 
+        else if (this->current_char == '[')
+        {
+            tokens.push_back(Token(TT::LSQUARE, this->pos));
+            this->advance();
+        }
+
+        else if (this->current_char == ']')
+        {
+            tokens.push_back(Token(TT::RSQUARE, this->pos));
+            this->advance();
+        }
+
         else if (this->current_char == '!')
         {
             auto [tok, error] = this->make_not_equals();

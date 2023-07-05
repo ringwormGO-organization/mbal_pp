@@ -36,6 +36,16 @@ std::string StringNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
+ListNode::ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->element_nodes = element_nodes;
+
+    this->pos_start = pos_start;
+    this->pos_end = pos_end;
+}
+
+/* ---------------------------------------------------------------------------- */
+
 VarAccessNode::VarAccessNode(Token var_name_tok) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;

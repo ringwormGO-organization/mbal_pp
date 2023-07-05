@@ -14,6 +14,12 @@
 #include "SymbolTable.hpp"
 #include "Token.hpp"
 
+template <typename T>
+void extend(std::vector<T>& vec, const std::vector<T>& elements) 
+{
+    vec.insert(vec.end(), elements.begin(), elements.end());
+}
+
 Value::Value(std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
 {
     if (pos_start != nullptr) { this->pos_start = pos_start; }
@@ -24,6 +30,15 @@ Value::Value(std::shared_ptr<Context> context, std::shared_ptr<Position> pos_sta
 Value::~Value()
 {
 
+}
+
+/**
+ * Returns value as string
+ * @return std::string
+*/
+std::string Value::repr()
+{
+    return "I am from base class `Value`, please check why I am displayed!";
 }
 
 std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> Value::added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
@@ -464,9 +479,28 @@ std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::added_to(std:
 {
     if (std::holds_alternative<std::shared_ptr<Value>>(other))
     {
-        if (auto number = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other)))
+        if (auto str = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other)))
         {
             return { std::make_shared<String>(this->value += std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(other))->value, this->context), std::make_shared<NoError>() };
+        }
+
+        else
+        {
+            return { nullptr, Value::illegal_operation(other) };
+        }
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> String::multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        if (auto number = std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other)))
+        {
+            return { std::make_shared<String>(this->multiply_string(this->value, std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other))->value), this->context), std::make_shared<NoError>() };
         }
 
         else
@@ -503,6 +537,136 @@ std::string String::multiply_string(std::string str, double times)
 
 /* ---------------------------------------------------------------------------- */
 
+List::List(std::vector<std::shared_ptr<Value>> elements, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->elements = elements;
+
+    if (pos_start != nullptr) { this->pos_start = pos_start; }
+    if (pos_end != nullptr) { this->pos_end = pos_end; }
+    if (context != nullptr) { this->context = context; }
+}
+
+List::~List()
+{
+
+}
+
+/**
+ * Returns value as string
+ * @return std::string
+*/
+std::string List::repr()
+{
+    return "TODO";
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> List::added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        std::shared_ptr<List> new_list = std::dynamic_pointer_cast<List>(this->copy());
+        new_list->elements.push_back(std::get<0>(other));
+
+        return { new_list, std::make_shared<NoError>() };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> List::subbed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        if (auto number = std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other)))
+        {
+            std::shared_ptr<List> new_list = std::dynamic_pointer_cast<List>(this->copy());
+
+            try
+            {
+                new_list->elements.erase(new_list->elements.begin() + static_cast<size_t>(std::dynamic_pointer_cast<Number>(std::get<0>(other))->value));
+                return { new_list, std::make_shared<NoError>() };
+            }
+
+            catch (const std::out_of_range& e)
+            {
+                return { nullptr, std::make_shared<RTError> (
+                    std::dynamic_pointer_cast<Number>(std::get<0>(other))->pos_start, std::dynamic_pointer_cast<Number>(std::get<0>(other))->pos_end,
+                    "Element at this index could not be removed from list because index is out of bounds",
+                    this->context
+                )};
+            }
+        }
+
+        else
+        {
+            return { nullptr, Value::illegal_operation(other) };
+        }
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> List::multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (std::holds_alternative<std::shared_ptr<Value>>(other))
+    {
+        if (auto list = std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(other)))
+        {
+            std::shared_ptr<List> new_list = std::dynamic_pointer_cast<List>(this->copy());
+
+            extend(new_list->elements, std::dynamic_pointer_cast<List>(std::get<0>(other))->elements);
+            return { new_list, std::make_shared<NoError>() };
+        }
+
+        else
+        {
+            return { nullptr, Value::illegal_operation(other) };
+        }
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> List::dived_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
+{
+    if (auto number = std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(other)))
+    {
+        std::shared_ptr<List> new_list = std::dynamic_pointer_cast<List>(this->copy());
+
+        try
+        {
+            return { this->elements.at(static_cast<size_t>(std::dynamic_pointer_cast<Number>(std::get<0>(other))->value)), std::make_shared<NoError>() };
+        }
+
+        catch (const std::out_of_range& e)
+        {
+            return { nullptr, std::make_shared<RTError> (
+                std::dynamic_pointer_cast<Number>(std::get<0>(other))->pos_start, std::dynamic_pointer_cast<Number>(std::get<0>(other))->pos_end,
+                "Element at this index could not be retrieved from list because index is out of bound",
+                this->context
+            )};
+        }
+    }
+
+    else
+    {
+        return { nullptr, Value::illegal_operation(other) };
+    }
+
+    throw ValueWrongType();
+    return { nullptr, nullptr };
+}
+
+std::shared_ptr<Value> List::copy()
+{
+    return std::enable_shared_from_this<Value>::shared_from_this();
+}
+
+/* ---------------------------------------------------------------------------- */
+
 Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names)
 {
     if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }
@@ -514,6 +678,15 @@ Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::str
 Function::~Function()
 {
 
+}
+
+/**
+ * Returns value as string
+ * @return std::string
+*/
+std::string Function::repr()
+{
+    return (std::string("<function ") += this->name += std::string(">"));
 }
 
 std::shared_ptr<RTResult> Function::execute(std::vector<std::shared_ptr<Value>> args)
@@ -566,9 +739,4 @@ std::shared_ptr<Value> Function::copy()
     copy->pos_end = this->pos_end;
 
     return copy;
-}
-
-std::string Function::repr()
-{
-    return (std::string("<function ") += this->name += std::string(">"));
 }

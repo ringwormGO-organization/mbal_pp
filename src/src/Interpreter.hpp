@@ -74,6 +74,13 @@ class Interpreter
         std::shared_ptr<RTResult> visit_StringNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         /**
+         * Function handling lists
+         * @param node node
+         * @param context context
+        */
+        std::shared_ptr<RTResult> visit_ListNode(ALL_VARIANT node, std::shared_ptr<Context> context);
+
+        /**
          * Function handling variable access
          * @param node node
          * @param context context

@@ -99,6 +99,11 @@ int main()
                 std::cout << std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result))->repr();
             }
 
+            else if (auto temporary = std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(result)))
+            {
+                std::cout << std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(result))->repr();
+            }
+
             else if (auto temporary = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(result))->repr();
@@ -107,6 +112,11 @@ int main()
             else if (auto temporary = std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result))->repr();
+            }
+
+            else
+            {
+                std::cout << std::get<std::shared_ptr<Value>>(result)->repr();
             }
             
             std::cout << '\n';

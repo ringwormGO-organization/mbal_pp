@@ -18,6 +18,7 @@
 
 class NumberNode;
 class StringNode;
+class ListNode;
 class VarAccessNode;
 class VarAssignNode;
 class BinOpNode;
@@ -44,6 +45,12 @@ class Value : public virtual std::enable_shared_from_this<Value>
         virtual ~Value();
 
     public:
+        /**
+         * Returns value as string
+         * @return std::string
+        */
+        virtual std::string repr();
+
         virtual std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other);
         virtual std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other);
         virtual std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other);
@@ -88,7 +95,7 @@ class Number : public Value
          * Returns value as string
          * @return std::string
         */
-        std::string repr();
+        std::string repr() override;
 
         std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
         std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
@@ -128,9 +135,10 @@ class String : public Value
          * Returns value as string
          * @return std::string
         */
-        std::string repr();
+        std::string repr() override;
 
         std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
 
         bool is_true() override;
         std::shared_ptr<Value> copy() override;
@@ -144,6 +152,31 @@ class String : public Value
 
 /* ---------------------------------------------------------------------------- */
 
+class List : public Value
+{
+    public:
+        List(std::vector<std::shared_ptr<Value>> elements, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        ~List();
+
+        /**
+         * Returns value as string
+         * @return std::string
+        */
+        std::string repr() override;
+
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> subbed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> multed_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+        std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> dived_by(std::variant<std::shared_ptr<Value>, std::nullptr_t> other) override;
+
+        std::shared_ptr<Value> copy() override;
+
+    public:
+        std::vector<std::shared_ptr<Value>> elements;
+};
+
+/* ---------------------------------------------------------------------------- */
+
 class Function : public Value
 {
     public:
@@ -151,13 +184,20 @@ class Function : public Value
         ~Function();
 
     public:
+        /**
+         * Returns value as string
+         * @return std::string
+        */
+        std::string repr() override;
+
         std::shared_ptr<RTResult> execute(std::vector<std::shared_ptr<Value>> args) override;
         std::shared_ptr<Value> copy() override;
-
-        std::string repr();
 
     public:
         std::string name = "";
         ALL_VARIANT body_node;
         std::vector<std::string> arg_names;
 };
+
+template <typename T>
+void extend(std::vector<T>& vec, const std::vector<T>& elements);

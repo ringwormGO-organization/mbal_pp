@@ -36,6 +36,11 @@ std::shared_ptr<RTResult> Interpreter::visit(ALL_VARIANT node, std::shared_ptr<C
         return this->visit_StringNode(node, context);
     }
 
+    else if (std::holds_alternative<std::shared_ptr<ListNode>>(node))
+    {
+        return this->visit_ListNode(node, context);
+    }
+
     else if (std::holds_alternative<std::shared_ptr<VarAccessNode>>(node))
     {
         return this->visit_VarAccessNode(node, context);
@@ -126,6 +131,25 @@ std::shared_ptr<RTResult> Interpreter::visit_StringNode(ALL_VARIANT node, std::s
 
     std::shared_ptr<RTResult> rt_result = std::make_shared<RTResult>();
     return rt_result->success(str);
+}
+
+/**
+ * Function handling lists
+ * @param node node
+ * @param context context
+*/
+std::shared_ptr<RTResult> Interpreter::visit_ListNode(ALL_VARIANT node, std::shared_ptr<Context> context)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::vector<std::shared_ptr<Value>> elements;
+
+    for (auto &&element_node : std::get<std::shared_ptr<ListNode>>(node)->element_nodes)
+    {
+        elements.push_back(res->register_result(this->visit(element_node, context)));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    return res->success(std::make_shared<List>(elements, context, std::get<std::shared_ptr<ListNode>>(node)->pos_start, std::get<std::shared_ptr<ListNode>>(node)->pos_end));
 }
 
 /**
@@ -410,6 +434,7 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
 std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::vector<std::shared_ptr<Value>> elements;
 
     std::shared_ptr<Number> start_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->start_value_node, context)));
     if (res->error->error_name != "") { return res; }
@@ -441,11 +466,13 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
 
         i += step_value->value;
 
-        res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->body_node, context));
+        elements.push_back(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->body_node, context)));
         if (res->error->error_name != "") { return res; }
     }
 
-    return res->success(std::make_shared<Number>(0));
+    return res->success(std::make_shared<List> (
+        elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
+    ));
 }
 
 /**
@@ -456,6 +483,7 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
 std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::vector<std::shared_ptr<Value>> elements;
 
     while (true)
     {
@@ -464,11 +492,13 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
 
         if (!condition->is_true()) break;
 
-        res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context));
+        elements.push_back(res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context)));
         if (res->error->error_name != "") { return res; }
     }
 
-    return res->success(std::make_shared<Number>(0));
+    return res->success(std::make_shared<List> (
+        elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
+    ));
 }
 
 /**
@@ -479,6 +509,7 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
 std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::shared_ptr<Context> context)
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::vector<std::shared_ptr<Value>> elements;
 
     while (true)
     {
@@ -487,11 +518,13 @@ std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::share
 
         if (!condition->is_true()) break;
 
-        res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->body_node, context));
+        elements.push_back(res->register_result(this->visit(std::get<std::shared_ptr<DoNode>>(node)->body_node, context)));
         if (res->error->error_name != "") { return res; }
     }
 
-    return res->success(std::make_shared<Number>(0));
+    return res->success(std::make_shared<List> (
+        elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
+    ));
 }
 
 /**

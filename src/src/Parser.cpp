@@ -152,7 +152,7 @@ std::shared_ptr<ParseResult> Parser::expr()
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected 'LET', int, float, identifier, '+', '-', '(' or 'NOT'"
+            "Expected 'LET', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
         )); 
     }
 
@@ -192,7 +192,7 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
     { 
         return res->failure(std::make_shared<InvalidSyntaxError>(
             this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected int, float, identifier, '+', '-', '(' or 'NOT'"
+            "Expected int, float, identifier, '+', '-', '(', '[' or 'NOT'"
         )); 
     }
 
@@ -278,7 +278,7 @@ std::shared_ptr<ParseResult> Parser::call()
             { 
                 return res->failure(std::make_shared<InvalidSyntaxError> (
                     this->current_tok.pos_start, this->current_tok.pos_end,
-                    "Expected ')', 'LET', 'IF', 'FOR', 'WHILE', 'DO', 'FN', int, float, identifier, '+', '-', '(' or 'NOT'"
+                    "Expected ')', 'LET', 'IF', 'FOR', 'WHILE', 'DO', 'FN', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
                 ));
             }
 
@@ -363,6 +363,14 @@ std::shared_ptr<ParseResult> Parser::atom()
         }
     }
 
+    else if (tok.type == TT::LSQUARE)
+    {
+        ALL_VARIANT list_expr = res->register_result(this->list_expr());
+        if (res->error->error_name != "") { return res; }
+
+        return res->success(list_expr);
+    }
+
     else if (tok.matches(TT::KEYWORD, KEYWORDS[4]))
     {
         ALL_VARIANT if_expr = res->register_result(this->if_expr());
@@ -405,8 +413,68 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     return res->failure(std::make_shared<InvalidSyntaxError>(
         tok.pos_start, tok.pos_end,
-        "Expected int or float, identifier, '+', '-' or '('"
+        "Expected int, float, identifier, '+', '-', '(', '[', IF', 'FOR', 'WHILE', 'FUN'"
     ));
+}
+
+std::shared_ptr<ParseResult> Parser::list_expr()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    std::vector<ALL_VARIANT> element_nodes;
+    std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
+
+    if (this->current_tok.type != TT::LSQUARE)
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected '['"
+        ));
+    }
+
+    res->register_advancement();
+    this->advance();
+
+    if (this->current_tok.type == TT::RSQUARE)
+    {
+        res->register_advancement();
+        this->advance();
+    }
+
+    else
+    {
+        element_nodes.push_back(res->register_result(this->expr()));
+
+        if (res->error->error_name != "")
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected ']', 'VAR', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+            ));
+        }
+
+        while (this->current_tok.type == TT::COMMA)
+        {
+            res->register_advancement();
+            this->advance();
+
+            element_nodes.push_back(res->register_result(this->expr()));
+            if (res->error->error_name != "") { return res; }
+        }
+
+        if (this->current_tok.type != TT::RSQUARE)
+        {
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected ',' or ']'"
+            ));
+        }
+
+        res->register_advancement();
+        this->advance();
+    }
+
+    return res->success(std::make_shared<ListNode>(element_nodes, pos_start, this->current_tok.pos_end->copy()));
 }
 
 std::shared_ptr<ParseResult> Parser::if_expr()

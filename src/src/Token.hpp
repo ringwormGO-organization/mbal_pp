@@ -29,6 +29,8 @@ enum TT
     /* Parentheses */
         LPAREN,
         RPAREN,
+        LSQUARE,
+        RSQUARE,
 
     /* Identifiers */
         IDENTIFIER,

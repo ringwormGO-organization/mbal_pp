@@ -19,6 +19,7 @@
 
 class NumberNode;
 class StringNode;
+class ListNode;
 class VarAccessNode;
 class VarAssignNode;
 class BinOpNode;
@@ -63,6 +64,25 @@ class StringNode
 
     public:
         Token tok;
+
+        std::shared_ptr<Position> pos_start;            /* starting position */
+        std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * List node
+ * @param tok tok
+*/
+class ListNode
+{
+    public:
+        ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+        virtual ~ListNode() {};
+
+        std::string repr();
+
+    public:
+        std::vector<ALL_VARIANT> element_nodes;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
