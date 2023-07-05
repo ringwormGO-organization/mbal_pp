@@ -171,7 +171,7 @@ std::string Number::repr()
         if (formatted_number[pos] == '.') 
         {
             formatted_number.erase(pos);
-        } 
+        }
         
         else 
         {
@@ -557,7 +557,24 @@ List::~List()
 */
 std::string List::repr()
 {
-    return "TODO";
+    std::string result = "[";
+
+    for (auto &&i : this->elements)
+    {
+        if (auto x = std::dynamic_pointer_cast<Number>(i))
+        {
+            result += x->repr() += std::string(", ");
+        }
+    }
+
+    if (this->elements.size() > 1)
+    {
+        result.pop_back();
+        result.pop_back();
+    }
+
+    result += "]";
+    return result;
 }
 
 std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> List::added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
