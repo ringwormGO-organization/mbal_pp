@@ -174,10 +174,12 @@ std::shared_ptr<RTResult> Interpreter::visit_VarAccessNode(ALL_VARIANT node, std
         ));
     }
 
-    std::get<std::shared_ptr<Value>>(value)->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
-    std::get<std::shared_ptr<Value>>(value)->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
+    std::shared_ptr<Value> new_value = std::get<std::shared_ptr<Value>>(value)->copy();
 
-    std::shared_ptr<Value> new_value = std::get<std::shared_ptr<Value>>(value);
+    new_value->pos_start = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_start;
+    new_value->pos_end = std::get<std::shared_ptr<VarAccessNode>>(node)->pos_end;
+    new_value->context = context;
+
     return res->success(new_value);
 }
 
@@ -569,11 +571,12 @@ std::shared_ptr<RTResult> Interpreter::visit_CallNode(ALL_VARIANT node, std::sha
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
     std::vector<std::shared_ptr<Value>> args;
 
-    std::shared_ptr<Function> value_to_call = std::dynamic_pointer_cast<Function>(res->register_result(this->visit(std::get<std::shared_ptr<CallNode>>(node)->node_to_call, context)));
+    std::shared_ptr<BuiltInFunction> value_to_call = std::dynamic_pointer_cast<BuiltInFunction>(res->register_result(this->visit(std::get<std::shared_ptr<CallNode>>(node)->node_to_call, context)));
     if (res->error->error_name != "") { return res; }
 
-    value_to_call = std::dynamic_pointer_cast<Function>(value_to_call->copy());
-    
+    value_to_call = std::dynamic_pointer_cast<BuiltInFunction>(value_to_call->copy());
+    value_to_call->context = context;
+
     value_to_call->pos_start = std::get<std::shared_ptr<CallNode>>(node)->pos_start;
     value_to_call->pos_end = std::get<std::shared_ptr<CallNode>>(node)->pos_end;
 
@@ -585,6 +588,12 @@ std::shared_ptr<RTResult> Interpreter::visit_CallNode(ALL_VARIANT node, std::sha
 
     std::shared_ptr<Value> return_value = res->register_result(value_to_call->execute(args));
     if (res->error->error_name != "") { return res; }
+
+    return_value = return_value->copy();
+    
+    return_value->pos_start = std::get<std::shared_ptr<CallNode>>(node)->pos_start;
+    return_value->pos_end = std::get<std::shared_ptr<CallNode>>(node)->pos_end;
+    return_value->context = context;
 
     return res->success(return_value);
 }

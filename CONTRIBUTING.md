@@ -1,6 +1,11 @@
 # How to start contributing
 Just drop a Pull Request :)
 
+## What can I do?
+- fix bugs
+- implement new features (maybe from [TODO](https://github.com/ringwormGO-organization/mbal_pp#todo) list)
+- or simply check [For those who want know more](#for-those-who-want-know-more) section
+
 # Coding style
 1. Use LF instead of CRLF
 2. Use spaces, size 4.
@@ -307,3 +312,51 @@ Wrong:
 
 # Used resources:
 * https://reactos.org/wiki/Coding_Style
+
+<br></br>
+
+# For those who want know more
+
+## Adding new built-in function
+1. Add new built-in function to `global_symbol_table` in `main.cpp`
+```cpp
+global_symbol_table->set(std::string("name"), std::make_shared<BuiltInFunction>("name"));
+```
+2. Make appropriate function in `Values.hpp`
+```cpp
+std::shared_ptr<RTResult> execute_name(std::shared_ptr<Context> exec_ctx);
+```
+3. Make an entry in `functions` map in `Values.cpp`
+```cpp
+{"name", [this](std::shared_ptr<Context> context) { return this->execute_name(context); }},
+```
+4. Add `if` or `else if` statment (depends on alphabetical order)
+```cpp
+else if (this->name == "name")
+{
+    this->arg_names.push_back("see arguments list down below");
+
+    /**
+     * value - string
+     * index - number
+     * list - list
+     */
+}
+```
+
+5. Make `execute_name` function
+```cpp
+std::shared_ptr<RTResult> BuiltInFunction::execute_name(std::shared_ptr<Context> exec_ctx)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    /* your code */
+
+    return res->success(std::make_shared<Number>(0)); /* Number.null - CodePulse's code */
+}
+```
+
+### Notes
+- replace all instances of `name` to function's name
+- all code here is required (except comments)
+- you get variable using `symbol_table` variable in `exec_ctx` variable (be careful when using `get_value` function because it can return `nullptr`, base class `Value` or any derived class from it)

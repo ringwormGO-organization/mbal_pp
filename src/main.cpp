@@ -84,6 +84,11 @@ int main()
         global_symbol_table->set(std::string("NULL"), std::make_shared<Number>(0));
         global_symbol_table->set(std::string("TRUE"), std::make_shared<Number>(1));
         global_symbol_table->set(std::string("FALSE"), std::make_shared<Number>(0));
+        global_symbol_table->set(std::string("MATH_PI"), std::make_shared<Number>(M_PI));
+
+        global_symbol_table->set(std::string("clear"), std::make_shared<BuiltInFunction>("clear"));
+        global_symbol_table->set(std::string("print"), std::make_shared<BuiltInFunction>("print"));
+        global_symbol_table->set(std::string("write"), std::make_shared<BuiltInFunction>("write"));
 
         std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> result = run("<stdin>", input);
 
@@ -94,24 +99,29 @@ int main()
 
         else
         {
-            if (auto temporary = std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result)))
+            if (std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<Number>(std::get<std::shared_ptr<Value>>(result))->repr();
             }
 
-            else if (auto temporary = std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(result)))
+            else if (std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<List>(std::get<std::shared_ptr<Value>>(result))->repr();
             }
 
-            else if (auto temporary = std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(result)))
+            else if (std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<String>(std::get<std::shared_ptr<Value>>(result))->repr();
             }
 
-            else if (auto temporary = std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result)))
+            else if (std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result)))
             {
                 std::cout << std::dynamic_pointer_cast<Function>(std::get<std::shared_ptr<Value>>(result))->repr();
+            }
+
+            else if (std::dynamic_pointer_cast<BuiltInFunction>(std::get<std::shared_ptr<Value>>(result)))
+            {
+                std::cout << std::dynamic_pointer_cast<BuiltInFunction>(std::get<std::shared_ptr<Value>>(result))->repr();
             }
 
             else

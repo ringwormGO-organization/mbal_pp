@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <functional>
 #include <iostream>
+#include <map>
 #include <math.h>
 #include <memory>
 #include <string>
@@ -177,10 +179,27 @@ class List : public Value
 
 /* ---------------------------------------------------------------------------- */
 
-class Function : public Value
+class BaseFunction : virtual public Value
 {
     public:
-        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names);
+        BaseFunction(std::string name, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        ~BaseFunction();
+
+        std::shared_ptr<Context> generate_new_context();
+        std::shared_ptr<RTResult> check_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args);
+        void populate_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args, std::shared_ptr<Context> exec_ctx);
+        std::shared_ptr<RTResult> check_and_populate_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args, std::shared_ptr<Context> exec_ctx);
+
+    public:
+        std::string name;
+};
+
+/* ---------------------------------------------------------------------------- */
+
+class Function : public BaseFunction
+{
+    public:
+        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
         ~Function();
 
     public:
@@ -196,6 +215,31 @@ class Function : public Value
     public:
         std::string name = "";
         ALL_VARIANT body_node;
+        std::vector<std::string> arg_names;
+};
+
+/* ---------------------------------------------------------------------------- */
+
+class BuiltInFunction : public BaseFunction
+{
+    public:
+        BuiltInFunction(std::string name, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        ~BuiltInFunction();
+
+        /**
+         * Returns value as string
+         * @return std::string
+        */
+        std::string repr() override;
+
+        std::shared_ptr<RTResult> execute(std::vector<std::shared_ptr<Value>> args) override;
+        std::shared_ptr<Value> copy() override;
+
+        std::shared_ptr<RTResult> execute_clear(std::shared_ptr<Context> exec_ctx);
+        std::shared_ptr<RTResult> execute_print(std::shared_ptr<Context> exec_ctx);
+        std::shared_ptr<RTResult> execute_write(std::shared_ptr<Context> exec_ctx);
+
+    private:
         std::vector<std::string> arg_names;
 };
 

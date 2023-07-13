@@ -186,3 +186,14 @@ class NoCopy : public std::exception
 
         const char* what() const noexcept override { return "[NoCopy] Function `copy` is not defined because I am not able to call any derived class"; }
 };
+
+/**
+ * Class handling exception when built in function is not found
+*/
+class NoBuiltInFunction : public std::exception
+{
+    public:
+        NoBuiltInFunction() noexcept = default;
+
+        const char* what() const noexcept override { return "[NoBuiltInFunction] There is no such built in function"; }
+};

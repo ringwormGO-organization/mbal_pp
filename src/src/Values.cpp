@@ -38,7 +38,7 @@ Value::~Value()
 */
 std::string Value::repr()
 {
-    return "I am from base class `Value`, please check why I am displayed!";
+    return "[repr()] I am from base class `Value`, please check why I am displayed!";
 }
 
 std::tuple<std::shared_ptr<Value>, std::shared_ptr<Error>> Value::added_to(std::variant<std::shared_ptr<Value>, std::nullptr_t> other)
@@ -684,7 +684,75 @@ std::shared_ptr<Value> List::copy()
 
 /* ---------------------------------------------------------------------------- */
 
-Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names)
+BaseFunction::BaseFunction(std::string name, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : Value(context, pos_start, pos_end)
+{
+    if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }
+}
+
+BaseFunction::~BaseFunction()
+{
+
+}
+
+std::shared_ptr<Context> BaseFunction::generate_new_context()
+{
+    std::shared_ptr<Context> new_context = std::make_shared<Context>(this->name, this->context, this->pos_start);
+    new_context->symbol_table = new_context->parent->symbol_table;
+
+    return new_context;
+}
+
+std::shared_ptr<RTResult> BaseFunction::check_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    if (args.size() > arg_names.size())
+    {
+        return res->failure(std::make_shared<RTError> (
+            this->pos_start, this->pos_end,
+            (std::to_string(args.size() - arg_names.size()) += std::string("too many args passed into ") += this->name),
+            this->context
+        ));
+    }
+
+    if (args.size() < arg_names.size())
+    {
+        return res->failure(std::make_shared<RTError> (
+            this->pos_start, this->pos_end,
+            (std::to_string(arg_names.size() - args.size()) += std::string("too few args passed into ") += this->name),
+            this->context
+        ));
+    }
+
+    return res->success(nullptr);
+}
+
+void BaseFunction::populate_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args, std::shared_ptr<Context> exec_ctx)
+{
+    for (size_t i = 0; i < arg_names.size(); i++)
+    {
+        std::string arg_name = arg_names.at(i);
+        std::shared_ptr<Value> arg_value = args.at(i);
+        
+        arg_value->context = exec_ctx;
+        exec_ctx->symbol_table->set(arg_name, arg_value);
+    }
+}
+
+std::shared_ptr<RTResult> BaseFunction::check_and_populate_args(std::vector<std::string> arg_names, std::vector<std::shared_ptr<Value>> args, std::shared_ptr<Context> exec_ctx)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    res->register_result(this->check_args(arg_names, args));
+    if (res->error->error_name != "") { return res; }
+
+    this->populate_args(arg_names, args, exec_ctx);
+    return res->success(nullptr);
+}
+
+/* ---------------------------------------------------------------------------- */
+
+Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end)
 {
     if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }
 
@@ -711,37 +779,12 @@ std::shared_ptr<RTResult> Function::execute(std::vector<std::shared_ptr<Value>> 
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
     Interpreter interpreter = Interpreter();
 
-    std::shared_ptr<Context> new_context = std::make_shared<Context>(this->name, this->context, this->pos_start);
-    new_context->symbol_table = new_context->parent->symbol_table;
+    std::shared_ptr<Context> exec_ctx = this->generate_new_context();
 
-    if (args.size() > this->arg_names.size())
-    {
-        return res->failure(std::make_shared<RTError> (
-            this->pos_start, this->pos_end,
-            (std::to_string(args.size() - this->arg_names.size()) += std::string("too many args passed into ") += this->name),
-            new_context
-        ));
-    }
+    res->register_result(this->check_and_populate_args(this->arg_names, args, exec_ctx));
+    if (res->error->error_name != "") { return res; }
 
-    if (args.size() < this->arg_names.size())
-    {
-        return res->failure(std::make_shared<RTError> (
-            this->pos_start, this->pos_end,
-            (std::to_string(this->arg_names.size() - args.size()) += std::string("too few args passed into ") += this->name),
-            new_context
-        ));
-    }
-
-    for (size_t i = 0; i < args.size(); i++)
-    {
-        std::string arg_name = this->arg_names.at(i);
-        std::shared_ptr<Value> arg_value = args.at(i);
-
-        arg_value->context = new_context;
-        new_context->symbol_table->set(arg_name, arg_value);
-    }
-
-    std::shared_ptr<Value> value = res->register_result(interpreter.visit(this->body_node, new_context));
+    std::shared_ptr<Value> value = res->register_result(interpreter.visit(this->body_node, exec_ctx));
     if (res->error->error_name != "") { return res; }
 
     return res->success(value);
@@ -757,3 +800,187 @@ std::shared_ptr<Value> Function::copy()
 
     return copy;
 }
+
+/* ---------------------------------------------------------------------------- */
+
+BuiltInFunction::BuiltInFunction(std::string name, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end) /* we could just pass name variable as CodePulse */
+{
+    
+}
+
+BuiltInFunction::~BuiltInFunction()
+{
+
+}
+
+/**
+ * Returns value as string
+ * @return std::string
+*/
+std::string BuiltInFunction::repr()
+{
+    return (std::string("<built-in function ") += this->name += std::string(">"));
+}
+
+std::shared_ptr<RTResult> BuiltInFunction::execute(std::vector<std::shared_ptr<Value>> args)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+    std::shared_ptr<Context> exec_ctx = this->generate_new_context();
+
+    std::map<const std::string, std::function<std::shared_ptr<RTResult>(std::shared_ptr<Context>)>> functions = 
+    {
+        {"clear", [this](std::shared_ptr<Context> context) { return this->execute_clear(context); }},
+        {"print", [this](std::shared_ptr<Context> context) { return this->execute_print(context); }},
+        {"write", [this](std::shared_ptr<Context> context) { return this->execute_write(context); }},
+    };
+
+    if (this->name == "clear")
+    {
+        /* no arguments needed for clear function */
+    }
+
+    else if (this->name == "print")
+    {
+        this->arg_names.push_back("value");
+    }
+
+    else if (this->name == "write")
+    {
+        this->arg_names.push_back("value");
+    }
+
+    else
+    {
+        throw NoBuiltInFunction();
+        return nullptr;
+    }
+
+    res->register_result(this->check_and_populate_args(this->arg_names, args, exec_ctx));
+    if (res->error->error_name != "") { return res; }
+
+    std::shared_ptr<Value> return_value;
+    auto function = functions.find(this->name);
+
+    if (function != functions.end())
+    {
+        return_value = res->register_result(functions[this->name](exec_ctx));
+        if (res->error->error_name != "") { return res; }
+    }
+
+    else
+    {
+        throw NoBuiltInFunction();
+        return nullptr;
+    }
+
+    return res->success(return_value);
+}
+
+std::shared_ptr<Value> BuiltInFunction::copy()
+{
+    std::shared_ptr<BuiltInFunction> copy = std::make_shared<BuiltInFunction>(this->name, this->context, this->pos_start, this->pos_end);
+    return copy;
+}
+
+/* ------------------------------------ */
+
+std::shared_ptr<RTResult> BuiltInFunction::execute_clear(std::shared_ptr<Context> exec_ctx)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    #if defined _WIN32 || defined _WIN64
+        system("cls");
+    #elif __APPLE__ || __MACH__ || __linux__ || __FreeBSD__
+        system("clear");
+    #endif
+
+    return res->success(std::make_shared<Number>(0)); /* Number.null - CodePulse's code */
+};
+
+std::shared_ptr<RTResult> BuiltInFunction::execute_print(std::shared_ptr<Context> exec_ctx)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    auto result = exec_ctx->symbol_table->get_value("value");
+    if (!std::holds_alternative<std::nullptr_t>(result))
+    {
+        auto final_result = std::get<std::shared_ptr<Value>>(result);
+
+        if (std::dynamic_pointer_cast<Number>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<Number>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<String>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<String>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<List>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<List>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<Function>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<Function>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<BuiltInFunction>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<BuiltInFunction>(final_result)->repr();
+        }
+
+        else
+        {
+            std::cout << std::get<std::shared_ptr<Value>>(result)->repr();
+        }
+
+        std::cout << std::endl;
+    }
+
+    return res->success(std::make_shared<Number>(0)); /* Number.null - CodePulse's code */
+};
+
+std::shared_ptr<RTResult> BuiltInFunction::execute_write(std::shared_ptr<Context> exec_ctx)
+{
+    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
+
+    auto result = exec_ctx->symbol_table->get_value("value");
+    if (!std::holds_alternative<std::nullptr_t>(result))
+    {
+        auto final_result = std::get<std::shared_ptr<Value>>(result);
+
+        if (std::dynamic_pointer_cast<Number>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<Number>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<String>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<String>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<List>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<List>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<Function>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<Function>(final_result)->repr();
+        }
+
+        else if (std::dynamic_pointer_cast<BuiltInFunction>(final_result))
+        {
+            std::cout << std::dynamic_pointer_cast<BuiltInFunction>(final_result)->repr();
+        }
+
+        else
+        {
+            std::cout << std::get<std::shared_ptr<Value>>(result)->repr();
+        }
+    }
+
+    return res->success(std::make_shared<Number>(0)); /* Number.null - CodePulse's code */
+};

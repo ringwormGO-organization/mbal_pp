@@ -15,7 +15,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 8 - Functions
 - [x] EP 9 - Strings
 - [x] EP 10 - Lists
-- [ ] EP 11 - Built-in Functions
+- [x] EP 11 - Built-in Functions
 - [ ] EP 12 - Mutli-line statments
 - [ ] EP 13 - RETURN, CONTINUE and BREAK
 - [ ] EP 14 - RUN statments and comments

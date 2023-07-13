@@ -52,5 +52,5 @@ void SymbolTable::set(std::string name, std::variant<std::shared_ptr<Value>, std
 
 void SymbolTable::remove(std::string name)
 {
-    this->symbols.erase(name);
+    if (this->symbols.contains(name)) { this->symbols.erase(name); }
 }
