@@ -18,11 +18,13 @@ ParseResult::~ParseResult()
 
 void ParseResult::register_advancement()
 {
+    this->last_registered_advance_count = 1;
     this->advance_count++;
 }
 
 ALL_VARIANT ParseResult::register_result(std::shared_ptr<ParseResult> res)
 {
+    this->last_registered_advance_count = res->advance_count;
     this->advance_count += res->advance_count;
 
     if (res->error->error_name != "")
@@ -31,6 +33,18 @@ ALL_VARIANT ParseResult::register_result(std::shared_ptr<ParseResult> res)
     }
 
     return res->node;
+
+}
+
+ALL_VARIANT ParseResult::try_register(std::shared_ptr<ParseResult> res)
+{
+    if (res->error->error_name != "")
+    {
+        this->to_reverse_count = res->advance_count;
+        return std::make_shared<NumberNode>(TT::NUL);
+    }
+
+    return res->register_result(res);
 }
 
 std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
@@ -82,9 +96,25 @@ Token Parser::advance()
     return this->current_tok;
 }
 
+Token Parser::reverse(size_t amount)
+{
+    this->tok_idx -= amount;
+    this->update_current_tok();
+    
+    return this->current_tok;
+}
+
+void Parser::update_current_tok()
+{
+    if (this->tok_idx >= 0 && this->tok_idx < this->tokens.size())
+    {
+        this->current_tok = this->tokens.at(this->tok_idx);
+    }
+}
+
 std::shared_ptr<ParseResult> Parser::parse()
 {
-    std::shared_ptr<ParseResult> res = this->expr();
+    std::shared_ptr<ParseResult> res = this->statements();
 
     if (res->error->error_name == "" && this->current_tok.type != TT::END_OF_FILE)
     {
@@ -100,6 +130,67 @@ std::shared_ptr<ParseResult> Parser::parse()
 }
 
 /* ------------------------------------ */
+
+std::shared_ptr<ParseResult> Parser::statements()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+
+    std::vector<ALL_VARIANT> statements;
+    std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
+
+    /* Check if current character is new line */
+    while (this->current_tok.type == TT::NEW_LINE)
+    {
+        /* Advance to next character */
+        res->register_advancement();
+        this->advance();
+    }
+
+    ALL_VARIANT statement = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    statements.push_back(statement);
+
+    bool more_statments = true;
+
+    while (true)
+    {
+        size_t newline_count = 0;
+        while (this->current_tok.type == TT::NEW_LINE)
+        {
+            res->register_advancement();
+            this->advance();
+
+            newline_count++;
+        }
+
+        if (newline_count == 0)
+        {
+            more_statments = false;
+        }
+
+        if (!more_statments) break;
+        statement = res->try_register(this->expr());
+
+        if (std::holds_alternative<std::shared_ptr<NumberNode>>(statement))
+        {
+            if (std::get<std::shared_ptr<NumberNode>>(statement)->tok.type == TT::NUL)
+            {
+                this->reverse(res->to_reverse_count);
+                more_statments = false;
+                continue;
+            }
+        }
+
+        statements.push_back(statement);
+    }
+
+    return res->success(std::make_shared<ListNode> (
+        statements,
+        pos_start,
+        this->current_tok.pos_end->copy()
+    ));
+}
 
 std::shared_ptr<ParseResult> Parser::expr()
 {

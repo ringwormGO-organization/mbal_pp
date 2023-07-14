@@ -49,6 +49,7 @@ enum TT
         ARROW,
 
     /* Other */
+        NEW_LINE,
         END_OF_FILE,
         NUL,
 };

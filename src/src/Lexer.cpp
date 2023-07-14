@@ -70,6 +70,12 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             this->advance();
         }
 
+        else if (std::string(";\n").find(std::string(1, this->current_char)) != std::string::npos)
+        {
+            tokens.push_back(Token(TT::NEW_LINE, this->pos));
+            this->advance();
+        }
+
         else if (isdigit((int)this->current_char))
         {
             tokens.push_back(this->make_number());
