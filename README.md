@@ -3,6 +3,8 @@
 
 mbal is general-purpose (mainly designed for testing) programming langauge
 
+# **THIS IMPLEMENTATION MIGHT BE SLOW AND/OR UNFINISHED**
+
 ## TODO
 ### From Code Pulse's tutorial
 - [x] EP 1 - Lexer
