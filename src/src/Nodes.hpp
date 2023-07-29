@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <any>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -13,6 +14,7 @@
 #include <variant>
 #include <vector>
 
+#include "Error.hpp"
 #include "Token.hpp"
 
 #include "define.hpp"
@@ -76,7 +78,7 @@ class StringNode
 class ListNode
 {
     public:
-        ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+        ListNode(std::vector<std::any> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
         virtual ~ListNode() {};
 
         std::string repr();
@@ -113,7 +115,7 @@ class VarAccessNode
 class VarAssignNode
 {
     public:
-        VarAssignNode(Token var_name_tok, ALL_VARIANT value_node);
+        VarAssignNode(Token var_name_tok, std::any value_node);
         ~VarAssignNode();
 
     public:
@@ -133,7 +135,7 @@ class VarAssignNode
 class BinOpNode
 {
     public:
-        BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node);
+        BinOpNode(std::any left_node, Token op_tok, std::any right_node);
         ~BinOpNode() {};
 
         std::string repr();
@@ -155,7 +157,7 @@ class BinOpNode
 class UnaryOpNode
 {
     public:
-        UnaryOpNode(Token op_tok, ALL_VARIANT node);
+        UnaryOpNode(Token op_tok, std::any node);
         ~UnaryOpNode();
 
         std::string repr();
@@ -169,36 +171,39 @@ class UnaryOpNode
 };
 
 /**
- * Node for IF statment
- * @param cases cases for IF statment
- * @param else_case case for ELSE statment
+ * Node for IF statement
+ * @param cases cases for IF statement
+ * @param else_case ELSE statement/case
 */
 class IfNode
 {
     public:
-        IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case);
+        IfNode(std::any cases, std::any else_case=std::any());
         ~IfNode();
 
     public:
-        std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
-        ALL_VARIANT else_case;
+        std::pair<std::vector<std::tuple<ALL_VARIANT, ALL_VARIANT, bool>>, std::any> cases;
+        std::pair<ALL_VARIANT, bool> else_case;
+
+        bool is_else_case_empty = false;                /* do we have ELSE statement */
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for FOR statment
+ * Node for FOR statement
  * @param var_name_tok variable name token
  * @param start_value_node node holding start value
  * @param end_value_node node holding end value
  * @param step_value_node node holding step value
  * @param body_node node holding body
+ * @param should_return_null should class return null
 */
 class ForNode
 {
     public:
-        ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node);
+        ForNode(Token var_name_tok, std::any start_value_node, std::any end_value_node, std::any step_value_node, std::any body_node, bool should_return_null);
         ~ForNode();
 
     public:
@@ -207,44 +212,49 @@ class ForNode
         ALL_VARIANT end_value_node;
         ALL_VARIANT step_value_node;
         ALL_VARIANT body_node;
+        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for WHILE statment
+ * Node for WHILE statement
  * @param condition_node node holding condition
- * @param body_node node holding body of WHILE statment
+ * @param body_node node holding body of WHILE statement
+ * @param should_return_null should class return null
 */
 class WhileNode
 {
     public:
-        WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node);
+        WhileNode(std::any condition_node, std::any body_node, bool should_return_null);
         ~WhileNode();
 
     public:
         ALL_VARIANT condition_node;
         ALL_VARIANT body_node;
+        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for DO statment, very similar to WHILE statment
- * @param body_node node holding body of DO statment
+ * Node for DO statement, very similar to WHILE statement
+ * @param body_node node holding body of DO statement
  * @param condition_node node holding condition
+ * @param should_return_null should class return null
 */
 class DoNode
 {
     public:
-        DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node);
+        DoNode(std::any body_node, std::any condition_node, bool should_return_null);
         ~DoNode();
 
     public:
         ALL_VARIANT condition_node;
         ALL_VARIANT body_node;
+        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
@@ -255,17 +265,19 @@ class DoNode
  * @param var_name_tok variable name of token
  * @param arg_name_toks vector holding arguments as Token class, a.k.a tokens
  * @param body_node node holding body of function; code which is executed, code which returns a value to caller
+ * @param should_return_null should class return null
 */
 class FuncDefNode
 {
     public:
-        FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node);
+        FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, std::any body_node, bool should_return_null);
         ~FuncDefNode();
 
     public:
         Token var_name_tok;
         std::vector<Token> arg_name_toks;
         ALL_VARIANT body_node;
+        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
@@ -279,7 +291,7 @@ class FuncDefNode
 class CallNode
 {
     public:
-        CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes);
+        CallNode(std::any node_to_call, std::vector<std::any> arg_nodes);
         ~CallNode();
 
     public:

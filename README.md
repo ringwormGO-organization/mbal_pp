@@ -16,7 +16,7 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 9 - Strings
 - [x] EP 10 - Lists
 - [x] EP 11 - Built-in Functions
-- [ ] EP 12 - Mutli-line statments
+- [x] EP 12 - Mutli-line statments
 - [ ] EP 13 - RETURN, CONTINUE and BREAK
 - [ ] EP 14 - RUN statments and comments
 - [x] EP BONUS - Power operator
@@ -31,6 +31,10 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] `DO` keyword
 - [ ] Generics
 - [ ] Self hosted
+
+### Important
+- [ ] Fix IF statment
+- [ ] remove `std::any`
 
 ## Credits
 - [ChatGPT](ai.com)

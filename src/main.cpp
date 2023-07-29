@@ -23,6 +23,84 @@
 std::shared_ptr<SymbolTable> global_symbol_table = std::make_shared<SymbolTable>();
 
 /**
+ * Converts std::any to ALL_VARIANT
+ * @param node - node to be converted
+ * @return ALL_VARIANT
+*/
+ALL_VARIANT convert(std::any node)
+{
+    ALL_VARIANT return_value;
+
+    if (node.type() == typeid(std::shared_ptr<NumberNode>)) 
+    {
+        return_value = std::any_cast<std::shared_ptr<NumberNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<StringNode>)) 
+    {
+        return_value = std::any_cast<std::shared_ptr<StringNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<ListNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<ListNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<VarAccessNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<VarAccessNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<VarAssignNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<VarAssignNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<BinOpNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<BinOpNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<UnaryOpNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<UnaryOpNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<IfNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<IfNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<WhileNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<WhileNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<DoNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<DoNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<FuncDefNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<FuncDefNode>>(node);
+    }
+
+    else if (node.type() == typeid(std::shared_ptr<CallNode>))
+    {
+        return_value = std::any_cast<std::shared_ptr<CallNode>>(node);
+    }
+
+    else 
+    {
+        throw WrongAny();
+        return return_value;
+    }
+
+    return return_value;
+}
+
+/**
  * Calls lexer, parser and interpreter
  * @param fn name of function
  * @param text input
@@ -53,7 +131,7 @@ std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> run(std::string fn,
     std::shared_ptr<Context> context = std::make_shared<Context>("<program>");
 
     context->symbol_table = global_symbol_table;
-    std::shared_ptr<RTResult> interpreter_result = interpreter.visit(ast.get()->node, context);
+    std::shared_ptr<RTResult> interpreter_result = interpreter.visit(convert(ast->node), context);
 
     if (interpreter_result->error->error_name != "")
     {
@@ -76,7 +154,12 @@ int main()
         std::cout << "mbal++ > ";
         getline(std::cin, input);
 
-        if (input == "exit")
+        if (input == "")
+        {
+            continue;
+        }
+
+        else if (input == "exit")
         {
             exit(0);
         }

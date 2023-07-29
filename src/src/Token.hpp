@@ -77,7 +77,10 @@ static const std::string KEYWORDS[] = {
         "DO",
 
     /* Functions */
-        "FN"
+        "FN",
+
+    /* Other */
+        "END",
 };
 
 class Token

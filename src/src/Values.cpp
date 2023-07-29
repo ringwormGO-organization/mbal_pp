@@ -752,12 +752,13 @@ std::shared_ptr<RTResult> BaseFunction::check_and_populate_args(std::vector<std:
 
 /* ---------------------------------------------------------------------------- */
 
-Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end)
+Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_return_null, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end)
 {
     if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }
 
     this->body_node = body_node;
     this->arg_names = arg_names;
+    this->should_return_null = should_return_null;
 }
 
 Function::~Function()
@@ -787,12 +788,12 @@ std::shared_ptr<RTResult> Function::execute(std::vector<std::shared_ptr<Value>> 
     std::shared_ptr<Value> value = res->register_result(interpreter.visit(this->body_node, exec_ctx));
     if (res->error->error_name != "") { return res; }
 
-    return res->success(value);
+    return res->success(this->should_return_null ? std::make_shared<Number>(0) : value);
 }
 
 std::shared_ptr<Value> Function::copy()
 {
-    std::shared_ptr<Function> copy = std::make_shared<Function>(this->name, this->body_node, this->arg_names);
+    std::shared_ptr<Function> copy = std::make_shared<Function>(this->name, this->body_node, this->arg_names, this->should_return_null);
 
     copy->context = this->context;
     copy->pos_start = this->pos_start;

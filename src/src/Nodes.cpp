@@ -6,6 +6,133 @@
 
 #include "Nodes.hpp"
 
+#define ANY_CAST(sender, receiver) \
+    if (sender.type() == typeid(std::shared_ptr<NumberNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<NumberNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<StringNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<StringNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<ListNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<ListNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<VarAccessNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<VarAccessNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<VarAssignNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<VarAssignNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<BinOpNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<BinOpNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<UnaryOpNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<IfNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<IfNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<WhileNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<WhileNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<DoNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<DoNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<FuncDefNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<FuncDefNode>>(sender); \
+    } \
+    \
+    else if (sender.type() == typeid(std::shared_ptr<CallNode>)) \
+    { \
+        receiver = std::any_cast<std::shared_ptr<CallNode>>(sender); \
+    } \
+    \
+    else \
+    { \
+        throw WrongAny(); \
+    } \
+
+#define ANY_CAST_VECTOR(any_data, converted_error) \
+    if (any_data.type() == typeid(std::shared_ptr<NumberNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<NumberNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<StringNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<StringNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<ListNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<ListNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<VarAccessNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAccessNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<VarAssignNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAssignNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<BinOpNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<BinOpNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<UnaryOpNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<IfNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<IfNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<WhileNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<WhileNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<DoNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<DoNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<FuncDefNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<FuncDefNode>>(any_data)); \
+    } \
+    \
+    else if (any_data.type() == typeid(std::shared_ptr<CallNode>)) \
+    { \
+        converted_vector.push_back(std::any_cast<std::shared_ptr<CallNode>>(any_data)); \
+    } \
+
 NumberNode::NumberNode(Token tok) : tok(tok)
 {
     this->tok = tok;
@@ -36,9 +163,22 @@ std::string StringNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-ListNode::ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+ListNode::ListNode(std::vector<std::any> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
 {
-    this->element_nodes = element_nodes;
+    std::vector<ALL_VARIANT> converted_vector;
+
+    for (const auto& data : std::any_cast<std::vector<std::any>>(element_nodes)) 
+    {
+        std::any any_data = data;
+        
+        try {
+            ANY_CAST_VECTOR(any_data, converted_vector); /* We do not need `else` stuff because we already have `catch` */
+        } catch (const std::bad_any_cast& e) {
+            throw ConvertError();
+        }
+    }
+
+    this->element_nodes = converted_vector;
 
     this->pos_start = pos_start;
     this->pos_end = pos_end;
@@ -61,10 +201,10 @@ VarAccessNode::~VarAccessNode()
 
 /* ---------------------------------------------------------------------------- */
 
-VarAssignNode::VarAssignNode(Token var_name_tok, ALL_VARIANT value_node) : var_name_tok(TT::NUL)
+VarAssignNode::VarAssignNode(Token var_name_tok, std::any value_node) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;
-    this->value_node = value_node;
+    ANY_CAST(value_node, this->value_node);
 
     this->pos_start = this->var_name_tok.pos_start;
     this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->value_node);
@@ -77,20 +217,20 @@ VarAssignNode::~VarAssignNode()
 
 /* ---------------------------------------------------------------------------- */
 
-BinOpNode::BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node) : op_tok(op_tok)
+BinOpNode::BinOpNode(std::any left_node, Token op_tok, std::any right_node) : op_tok(op_tok)
 {
-    this->left_node = left_node;
+    ANY_CAST(left_node, this->left_node);
     this->op_tok = op_tok;
-    this->right_node = right_node;
+    ANY_CAST(right_node, this->right_node);
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->left_node))
     {
-        this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, left_node);
+        this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->left_node);
     }
 
     if (std::holds_alternative<std::shared_ptr<UnaryOpNode>>(this->right_node))
     {
-        this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, right_node);
+        this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->right_node);
     }
 }
 
@@ -101,10 +241,10 @@ std::string BinOpNode::repr()
 
 /* ---------------------------------------------------------------------------- */
 
-UnaryOpNode::UnaryOpNode(Token op_tok, ALL_VARIANT node) : op_tok(op_tok)
+UnaryOpNode::UnaryOpNode(Token op_tok, std::any node) : op_tok(op_tok)
 {
     this->op_tok = op_tok;
-    this->node = node;
+    ANY_CAST(node, this->node);
 
     this->pos_start = this->op_tok.pos_start;
     this->pos_end = this->op_tok.pos_end;
@@ -122,16 +262,27 @@ std::string repr()
 
 /* ---------------------------------------------------------------------------- */
 
-IfNode::IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case)
+IfNode::IfNode(std::any cases, std::any else_case)
 {
-    this->cases = cases;
-    this->else_case = else_case;
+    std::cout << cases.type().name() << std::endl;
+    this->cases = std::any_cast<std::pair<std::vector<std::tuple<ALL_VARIANT, ALL_VARIANT, bool>>, std::any>>(cases);
+    
+    if (!else_case.has_value()) { this->is_else_case_empty = true; }
 
-    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, cases.at(0).first);
+    if (else_case.type() == typeid(std::pair<ALL_VARIANT, bool>)) 
+    { 
+        this->else_case = std::any_cast<std::pair<ALL_VARIANT, bool>>(else_case);
+    }
 
-    bool is_empty = (else_case == ALL_VARIANT{});
-    if (is_empty) { this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, cases.at(cases.size() - 1).first); }
-    else { this->pos_end =  std::visit([](auto&& arg) { return arg->pos_end; }, else_case); }
+    else
+    {
+        this->is_else_case_empty = true;
+    }
+
+    this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, std::get<0>(this->cases.first.at(0)));
+
+    if (this->is_else_case_empty) { this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, std::get<1>(this->cases.first.at(0))); }
+    else { this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->else_case.first); }
 }
 
 IfNode::~IfNode()
@@ -141,13 +292,16 @@ IfNode::~IfNode()
 
 /* ---------------------------------------------------------------------------- */
 
-ForNode::ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node) : var_name_tok(TT::NUL)
+ForNode::ForNode(Token var_name_tok, std::any start_value_node, std::any end_value_node, std::any step_value_node, std::any body_node, bool should_return_null) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;
-    this->start_value_node = start_value_node;
-    this->end_value_node = end_value_node;
-    this->step_value_node = step_value_node;
-    this->body_node = body_node;
+
+    ANY_CAST(start_value_node, this->start_value_node);
+    ANY_CAST(end_value_node, this->end_value_node);
+    ANY_CAST(step_value_node, this->step_value_node);
+    ANY_CAST(body_node, this->body_node);
+
+    this->should_return_null = should_return_null;
 
     this->pos_start = this->var_name_tok.pos_start;
     this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->body_node);
@@ -160,10 +314,12 @@ ForNode::~ForNode()
 
 /* ---------------------------------------------------------------------------- */
 
-WhileNode::WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node)
+WhileNode::WhileNode(std::any condition_node, std::any body_node, bool should_return_null)
 {
-    this->condition_node = condition_node;
-    this->body_node = body_node;
+    ANY_CAST(condition_node, this->condition_node);
+    ANY_CAST(body_node, this->body_node);
+
+    this->should_return_null = should_return_null;
 
     this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->condition_node);
     this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->body_node);
@@ -176,10 +332,12 @@ WhileNode::~WhileNode()
 
 /* ---------------------------------------------------------------------------- */
 
-DoNode::DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node)
+DoNode::DoNode(std::any body_node, std::any condition_node, bool should_return_null)
 {
-    this->body_node = body_node;
-    this->condition_node = condition_node;
+    ANY_CAST(body_node, this->body_node);
+    ANY_CAST(condition_node, this->condition_node);
+
+    this->should_return_null = should_return_null;
 
     this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->body_node);
     this->pos_end = std::visit([](auto&& arg) { return arg->pos_end; }, this->condition_node);
@@ -192,11 +350,12 @@ DoNode::~DoNode()
 
 /* ---------------------------------------------------------------------------- */
 
-FuncDefNode::FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node) : var_name_tok(TT::NUL)
+FuncDefNode::FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, std::any body_node, bool should_return_null) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;
     this->arg_name_toks = arg_name_toks;
-    this->body_node = body_node;
+    ANY_CAST(body_node, this->body_node);
+    this->should_return_null = should_return_null;
 
     if (this->var_name_tok.type != TT::NUL) { this->pos_start = this->var_name_tok.pos_start; }
     else if (this->arg_name_toks.size() > 0) { this->pos_start = this->arg_name_toks.at(0).pos_start; }
@@ -212,10 +371,23 @@ FuncDefNode::~FuncDefNode()
 
 /* ---------------------------------------------------------------------------- */
 
-CallNode::CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes)
+CallNode::CallNode(std::any node_to_call, std::vector<std::any> arg_nodes)
 {
-    this->node_to_call = node_to_call;
-    this->arg_nodes = arg_nodes;
+    ANY_CAST(node_to_call, this->node_to_call);
+
+    std::vector<ALL_VARIANT> converted_vector;
+
+    for (const auto& data : std::any_cast<std::vector<std::any>>(arg_nodes)) {
+        std::any any_data = data;
+        
+        try {
+            ANY_CAST_VECTOR(any_data, converted_vector); /* We do not need `else` stuff because we already have `catch` */
+        } catch (const std::bad_any_cast& e) {
+            throw ConvertError();
+        }
+    }
+
+    this->arg_nodes = converted_vector;
 
     this->pos_start = std::visit([](auto&& arg) { return arg->pos_start; }, this->node_to_call);
 
