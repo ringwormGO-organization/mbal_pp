@@ -59,6 +59,7 @@ class Parser
         std::shared_ptr<ParseResult> parse();
 
         std::shared_ptr<ParseResult> statements();
+        std::shared_ptr<ParseResult> statment();
         std::shared_ptr<ParseResult> expr();
         std::shared_ptr<ParseResult> comp_expr();
         std::shared_ptr<ParseResult> arith_expr();

@@ -143,7 +143,7 @@ std::shared_ptr<ParseResult> Parser::statements()
         this->advance();
     }
 
-    std::any statement = res->register_result(this->expr());
+    std::any statement = res->register_result(this->statment());
     if (res->error->error_name != "") { return res; }
 
     statements.push_back(statement);
@@ -166,7 +166,7 @@ std::shared_ptr<ParseResult> Parser::statements()
         }
 
         if (!more_statments) break;
-        statement = res->try_register(this->expr());
+        statement = res->try_register(this->statment());
 
         if (statement.type() == typeid(std::shared_ptr<NumberNode>))
         {
@@ -186,6 +186,58 @@ std::shared_ptr<ParseResult> Parser::statements()
         pos_start,
         this->current_tok.pos_end->copy()
     ));
+}
+
+std::shared_ptr<ParseResult> Parser::statment()
+{
+    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+    std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
+
+    ALL_VARIANT expr;
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        expr = std::any_cast<ALL_VARIANT>(res->try_register(this->expr()));
+        if (std::holds_alternative<std::shared_ptr<NumberNode>>(expr))
+        {
+            if (std::get<std::shared_ptr<NumberNode>>(expr)->tok.type == TT::NUL)
+            {
+                this->reverse(res->to_reverse_count);
+            }
+        }
+
+        return res->success(std::make_shared<ReturnNode>(expr, pos_start, this->current_tok.pos_start->copy()));
+    }
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[15]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        return res->success(std::make_shared<ContinueNode>(pos_start, this->current_tok.pos_start->copy()));
+    }
+
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[16]))
+    {
+        res->register_advancement();
+        this->advance();
+
+        return res->success(std::make_shared<BreakNode>(pos_start, this->current_tok.pos_start->copy()));
+    }
+
+    expr = std::any_cast<ALL_VARIANT>(res->register_result(this->expr()));
+    if (res->error->error_name != "")
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'RETURN', 'CONTINUE', 'BREAK', 'LET', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[', or 'NOT'"
+        ));
+    }
+
+    return res->success(expr);
 }
 
 std::shared_ptr<ParseResult> Parser::expr()
@@ -624,7 +676,7 @@ std::shared_ptr<ParseResult> Parser::if_expr_c()
 
         else
         {
-            std::any expr = res->register_result(this->expr());
+            std::any expr = res->register_result(this->statment());
             if (res->error->error_name != "") { return res; }
 
             else_case = std::make_pair(expr, false);
@@ -723,7 +775,7 @@ std::shared_ptr<ParseResult> Parser::if_expr_cases(std::string case_keyword)
 
     else
     {
-        std::any expr = res->register_result(this->expr());
+        std::any expr = res->register_result(this->statment());
         if (res->error->error_name != "") { return res; }
 
         cases.push_back(std::make_tuple(condition, expr, false));
@@ -833,7 +885,7 @@ std::shared_ptr<ParseResult> Parser::for_expr()
         return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body, true));
     }
 
-    std::any body = res->register_result(this->expr());
+    std::any body = res->register_result(this->statment());
     if (res->error->error_name != "") { return res; }
 
     return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body, false));
@@ -890,7 +942,7 @@ std::shared_ptr<ParseResult> Parser::while_expr()
         return res->success(std::make_shared<WhileNode>(condition, body, true));
     }
 
-    std::any body = res->register_result(this->expr());
+    std::any body = res->register_result(this->statment());
     if (res->error->error_name != "") { return res; }
 
     return res->success(std::make_shared<WhileNode>(condition, body, false));
@@ -959,7 +1011,7 @@ std::shared_ptr<ParseResult> Parser::do_expr()
         this->advance();
     }
 
-    std::any condition = res->register_result(this->expr());
+    std::any condition = res->register_result(this->statment());
     if (res->error->error_name != "") { return res; }
 
     return res->success(std::make_shared<DoNode>(body, condition, false));

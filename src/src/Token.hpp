@@ -55,31 +55,36 @@ enum TT
 };
 
 static const std::string KEYWORDS[] = {
-    /* Declaring variables */
+    /* Declaring variables (0) */
         "LET",
     
-    /* Logical operators */
+    /* Logical operators (3) */
         "AND",
         "OR",
         "NOT",
 
-    /* IF statments */
+    /* IF statments (7) */
         "IF",
         "THEN",
         "ELSE IF",
         "ELSE",
 
-    /* FOR, WHILE and DO statment */
+    /* FOR, WHILE and DO statment (12) */
         "FOR",
         "UNTIL",
         "STEP",
         "WHILE",
         "DO",
 
-    /* Functions */
+    /* Functions (13) */
         "FN",
 
-    /* Other */
+    /* RETURN, CONTINUE, BREAK (16) */
+        "RETURN",
+        "CONTINUE,"
+        "BREAK",
+
+    /* Other (17) */
         "END",
 };
 

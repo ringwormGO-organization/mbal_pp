@@ -32,6 +32,9 @@ class WhileNode;
 class DoNode;
 class FuncDefNode;
 class CallNode;
+class ReturnNode;
+class ContinueNode;
+class BreakNode;
 
 /**
  * Number node
@@ -300,4 +303,54 @@ class CallNode
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
+};
+
+/**
+ * Node handling RETURN statement
+ * @param node_to_return node which is intended for return
+ * @param pos_start starting position
+ * @param pos_end ending position
+*/
+class ReturnNode
+{
+    public:
+        ReturnNode(ALL_VARIANT node_to_return, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+        ~ReturnNode();
+
+    public:
+        ALL_VARIANT node_to_return;
+
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;   
+};
+
+/**
+ * Node handling CONTINUE statement
+ * @param pos_start starting position
+ * @param pos_end ending position
+*/
+class ContinueNode
+{
+    public:
+        ContinueNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+        ~ContinueNode();
+
+    public:
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;   
+};
+
+/**
+ * Node handling BREAK statement
+ * @param pos_start starting position
+ * @param pos_end ending position
+*/
+class BreakNode
+{
+    BreakNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+    ~BreakNode();
+
+    public:
+        std::shared_ptr<Position> pos_start;
+        std::shared_ptr<Position> pos_end;  
 };

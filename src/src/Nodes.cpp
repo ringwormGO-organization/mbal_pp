@@ -399,3 +399,44 @@ CallNode::~CallNode()
 {
 
 }
+
+/* ---------------------------------------------------------------------------- */
+
+ReturnNode::ReturnNode(ALL_VARIANT node_to_return, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->node_to_return = node_to_return;
+
+    this->pos_start = pos_start;
+    this->pos_end = pos_end;
+}
+
+ReturnNode::~ReturnNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+ContinueNode::ContinueNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->pos_start = pos_start;
+    this->pos_end = pos_end;
+}
+
+ContinueNode::~ContinueNode()
+{
+
+}
+
+/* ---------------------------------------------------------------------------- */
+
+BreakNode::BreakNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end)
+{
+    this->pos_start = pos_start;
+    this->pos_end = pos_end;
+}
+
+BreakNode::~BreakNode()
+{
+
+}
