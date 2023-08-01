@@ -744,7 +744,7 @@ std::shared_ptr<RTResult> BaseFunction::check_and_populate_args(std::vector<std:
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
     res->register_result(this->check_args(arg_names, args));
-    if (res->error->error_name != "") { return res; }
+    if (res->should_return()) { return res; }
 
     this->populate_args(arg_names, args, exec_ctx);
     return res->success(nullptr);
@@ -752,13 +752,13 @@ std::shared_ptr<RTResult> BaseFunction::check_and_populate_args(std::vector<std:
 
 /* ---------------------------------------------------------------------------- */
 
-Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_return_null, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end)
+Function::Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_auto_return, std::shared_ptr<Context> context, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end) : BaseFunction(name, context, pos_start, pos_end)
 {
     if (name != "") { this->name = name; } else { this->name = "<anonymous>"; }
 
     this->body_node = body_node;
     this->arg_names = arg_names;
-    this->should_return_null = should_return_null;
+    this->should_auto_return = should_auto_return;
 }
 
 Function::~Function()
@@ -783,17 +783,18 @@ std::shared_ptr<RTResult> Function::execute(std::vector<std::shared_ptr<Value>> 
     std::shared_ptr<Context> exec_ctx = this->generate_new_context();
 
     res->register_result(this->check_and_populate_args(this->arg_names, args, exec_ctx));
-    if (res->error->error_name != "") { return res; }
+    if (res->should_return()) { return res; }
 
     std::shared_ptr<Value> value = res->register_result(interpreter.visit(this->body_node, exec_ctx));
-    if (res->error->error_name != "") { return res; }
+    if (res->should_return() && res->func_return_value == nullptr) { return res; }
 
-    return res->success(this->should_return_null ? std::make_shared<Number>(0) : value);
+    std::shared_ptr<Value> ret_value = this->should_auto_return ? value : (res->func_return_value != nullptr ? res->func_return_value : std::make_shared<Number>(0));
+    return res->success(ret_value);
 }
 
 std::shared_ptr<Value> Function::copy()
 {
-    std::shared_ptr<Function> copy = std::make_shared<Function>(this->name, this->body_node, this->arg_names, this->should_return_null);
+    std::shared_ptr<Function> copy = std::make_shared<Function>(this->name, this->body_node, this->arg_names, this->should_auto_return);
 
     copy->context = this->context;
     copy->pos_start = this->pos_start;

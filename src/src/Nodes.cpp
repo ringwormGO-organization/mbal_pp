@@ -6,133 +6,6 @@
 
 #include "Nodes.hpp"
 
-#define ANY_CAST(sender, receiver) \
-    if (sender.type() == typeid(std::shared_ptr<NumberNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<NumberNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<StringNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<StringNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<ListNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<ListNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<VarAccessNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<VarAccessNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<VarAssignNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<VarAssignNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<BinOpNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<BinOpNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<UnaryOpNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<IfNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<IfNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<WhileNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<WhileNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<DoNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<DoNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<FuncDefNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<FuncDefNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<CallNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<CallNode>>(sender); \
-    } \
-    \
-    else \
-    { \
-        throw WrongAny(); \
-    } \
-
-#define ANY_CAST_VECTOR(any_data, converted_error) \
-    if (any_data.type() == typeid(std::shared_ptr<NumberNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<NumberNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<StringNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<StringNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<ListNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<ListNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<VarAccessNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAccessNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<VarAssignNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAssignNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<BinOpNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<BinOpNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<UnaryOpNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<IfNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<IfNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<WhileNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<WhileNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<DoNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<DoNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<FuncDefNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<FuncDefNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<CallNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<CallNode>>(any_data)); \
-    } \
-
 NumberNode::NumberNode(Token tok) : tok(tok)
 {
     this->tok = tok;
@@ -350,12 +223,12 @@ DoNode::~DoNode()
 
 /* ---------------------------------------------------------------------------- */
 
-FuncDefNode::FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, std::any body_node, bool should_return_null) : var_name_tok(TT::NUL)
+FuncDefNode::FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, std::any body_node, bool should_auto_return) : var_name_tok(TT::NUL)
 {
     this->var_name_tok = var_name_tok;
     this->arg_name_toks = arg_name_toks;
     ANY_CAST(body_node, this->body_node);
-    this->should_return_null = should_return_null;
+    this->should_auto_return = should_auto_return;
 
     if (this->var_name_tok.type != TT::NUL) { this->pos_start = this->var_name_tok.pos_start; }
     else if (this->arg_name_toks.size() > 0) { this->pos_start = this->arg_name_toks.at(0).pos_start; }

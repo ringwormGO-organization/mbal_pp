@@ -31,6 +31,9 @@ class WhileNode;
 class DoNode;
 class FuncDefNode;
 class CallNode;
+class ReturnNode;
+class ContinueNode;
+class BreakNode;
 
 class Context;
 class Error;
@@ -199,7 +202,7 @@ class BaseFunction : virtual public Value
 class Function : public BaseFunction
 {
     public:
-        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_return_null, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_auto_return, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
         ~Function();
 
     public:
@@ -216,7 +219,7 @@ class Function : public BaseFunction
         std::string name = "";
         ALL_VARIANT body_node;
         std::vector<std::string> arg_names;
-        bool should_return_null;
+        bool should_auto_return;
 };
 
 /* ---------------------------------------------------------------------------- */

@@ -200,7 +200,9 @@ std::shared_ptr<ParseResult> Parser::statment()
         res->register_advancement();
         this->advance();
 
-        expr = std::any_cast<ALL_VARIANT>(res->try_register(this->expr()));
+        std::any expr_temp = res->try_register(this->expr());
+        ANY_CAST(expr_temp, expr);
+
         if (std::holds_alternative<std::shared_ptr<NumberNode>>(expr))
         {
             if (std::get<std::shared_ptr<NumberNode>>(expr)->tok.type == TT::NUL)
@@ -228,7 +230,7 @@ std::shared_ptr<ParseResult> Parser::statment()
         return res->success(std::make_shared<BreakNode>(pos_start, this->current_tok.pos_start->copy()));
     }
 
-    expr = std::any_cast<ALL_VARIANT>(res->register_result(this->expr()));
+    std::any expr_temp = res->register_result(this->expr());
     if (res->error->error_name != "")
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
@@ -237,6 +239,7 @@ std::shared_ptr<ParseResult> Parser::statment()
         ));
     }
 
+    ANY_CAST(expr_temp, expr)
     return res->success(expr);
 }
 
@@ -659,7 +662,7 @@ std::shared_ptr<ParseResult> Parser::if_expr_c()
 
             else_case = std::make_pair(_statements, true);
 
-            if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+            if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
             {
                 res->register_advancement();
                 this->advance();
@@ -757,7 +760,7 @@ std::shared_ptr<ParseResult> Parser::if_expr_cases(std::string case_keyword)
 
         cases.push_back(std::make_tuple(condition, statments, true));
 
-        if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+        if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
         {
             res->register_advancement();
             this->advance();
@@ -871,7 +874,7 @@ std::shared_ptr<ParseResult> Parser::for_expr()
         std::any body = res->register_result(this->statements());
         if (res->error->error_name != "") { return res; }
 
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
                 this->current_tok.pos_start, this->current_tok.pos_end,
@@ -928,7 +931,7 @@ std::shared_ptr<ParseResult> Parser::while_expr()
         std::any body = res->register_result(this->statements());
         if (res->error->error_name != "") { return res; }
 
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
                 this->current_tok.pos_start, this->current_tok.pos_end,
@@ -973,7 +976,7 @@ std::shared_ptr<ParseResult> Parser::do_expr()
         body = res->register_result(this->statements());
         if (res->error->error_name != "") { return res; }
 
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
         {
             return res->failure(std::make_shared<InvalidSyntaxError> (
                 this->current_tok.pos_start, this->current_tok.pos_end,
@@ -1122,7 +1125,7 @@ std::shared_ptr<ParseResult> Parser::func_def()
         std::any node_to_return = res->register_result(this->expr());
         if (res->error->error_name != "") { return res; }
 
-        return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, node_to_return, false));
+        return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, node_to_return, true));
     }
 
     if (this->current_tok.type != TT::NEW_LINE)
@@ -1139,7 +1142,7 @@ std::shared_ptr<ParseResult> Parser::func_def()
     std::any body = res->register_result(this->statements());
     if (res->error->error_name != "") { return res; }
 
-    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             this->current_tok.pos_start, this->current_tok.pos_end,
@@ -1154,7 +1157,7 @@ std::shared_ptr<ParseResult> Parser::func_def()
         var_name_tok,
         arg_name_toks,
         body,
-        true
+        false
     ));
 }
 
