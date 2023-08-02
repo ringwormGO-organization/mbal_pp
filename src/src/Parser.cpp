@@ -54,7 +54,7 @@ std::shared_ptr<ParseResult> ParseResult::success(std::any node)
 
 std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 {
-    if (this->error->error_name == "" || this->advance_count == 0) /* there is no error and therefore error_name is empty */
+    if (this->error->error_name == "" || this->last_registered_advance_count == 0) /* there is no error and therefore error_name is empty */
     {
         this->error = error;
     }
@@ -1122,10 +1122,10 @@ std::shared_ptr<ParseResult> Parser::func_def()
         res->register_advancement();
         this->advance();
 
-        std::any node_to_return = res->register_result(this->expr());
+        std::any body = res->register_result(this->expr());
         if (res->error->error_name != "") { return res; }
 
-        return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, node_to_return, true));
+        return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, body, true));
     }
 
     if (this->current_tok.type != TT::NEW_LINE)
