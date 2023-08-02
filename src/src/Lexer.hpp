@@ -91,6 +91,12 @@ class Lexer
         */
         Token make_greater_than();
 
+        /**
+         * Skips comment
+         * @return Token
+        */
+        Token skip_comment();
+
     private:
         std::string fn = "";
         std::string text = "";

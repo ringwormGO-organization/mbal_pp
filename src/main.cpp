@@ -172,6 +172,8 @@ int main()
         global_symbol_table->set(std::string("clear"), std::make_shared<BuiltInFunction>("clear"));
         global_symbol_table->set(std::string("print"), std::make_shared<BuiltInFunction>("print"));
         global_symbol_table->set(std::string("write"), std::make_shared<BuiltInFunction>("write"));
+        global_symbol_table->set(std::string("write"), std::make_shared<BuiltInFunction>("len"));
+        global_symbol_table->set(std::string("write"), std::make_shared<BuiltInFunction>("run"));
 
         std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> result = run("<stdin>", input);
 

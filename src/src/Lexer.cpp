@@ -70,6 +70,11 @@ std::tuple<std::vector<Token>, std::shared_ptr<Error>> Lexer::make_tokens()
             this->advance();
         }
 
+        else if (this->current_char == '#')
+        {
+            this->skip_comment();
+        }
+
         else if (std::string(";\n").find(std::string(1, this->current_char)) != std::string::npos)
         {
             tokens.push_back(Token(TT::NEW_LINE, this->pos));
@@ -388,4 +393,20 @@ Token Lexer::make_greater_than()
     }
 
     return Token(tok_type, pos_start, "", this->pos);
+}
+
+/**
+ * Skips comment
+ * @return Token
+*/
+Token Lexer::skip_comment()
+{
+    this->advance();
+
+    while (this->current_char != '\n')
+    {
+        this->advance();
+    }
+
+    this->advance();
 }

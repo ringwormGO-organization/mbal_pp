@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -37,6 +38,9 @@ class BreakNode;
 
 class Context;
 class Error;
+class Lexer;
+class Parser;
+class ParseResult;
 class Position;
 class RTResult;
 class Token;
@@ -242,6 +246,8 @@ class BuiltInFunction : public BaseFunction
         std::shared_ptr<RTResult> execute_clear(std::shared_ptr<Context> exec_ctx);
         std::shared_ptr<RTResult> execute_print(std::shared_ptr<Context> exec_ctx);
         std::shared_ptr<RTResult> execute_write(std::shared_ptr<Context> exec_ctx);
+        std::shared_ptr<RTResult> execute_len(std::shared_ptr<Context> exec_ctx);
+        std::shared_ptr<RTResult> execute_run(std::shared_ptr<Context> exec_ctx);
 
     private:
         std::vector<std::string> arg_names;
