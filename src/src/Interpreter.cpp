@@ -402,12 +402,8 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
 {
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
 
-    bool _should_return_null;
-
-    for (auto const& [condition, expr, should_return_null] : std::get<std::shared_ptr<IfNode>>(node)->cases.first)
+    for (auto const& [condition, expr] : std::get<std::shared_ptr<IfNode>>(node)->cases)
     {
-        _should_return_null = should_return_null;
-
         std::shared_ptr<Value> condition_value = res->register_result(this->visit(condition, context));
         if (res->error->error_name != "") { return res; }
 
@@ -416,21 +412,20 @@ std::shared_ptr<RTResult> Interpreter::visit_IfNode(ALL_VARIANT node, std::share
             std::shared_ptr<Value> expr_value = res->register_result(this->visit(expr, context));
             if (res->error->error_name != "") { return res; }
 
-            return res->success(should_return_null ? std::make_shared<Number>(0) : expr_value);
+            return res->success(expr_value);
         }
     }
 
-    if (!std::get<std::shared_ptr<IfNode>>(node)->is_else_case_empty)
+    bool is_empty = (std::get<std::shared_ptr<IfNode>>(node)->else_case == ALL_VARIANT{});
+    if (!is_empty)
     {
-        std::pair<ALL_VARIANT, bool> _expr = std::get<std::shared_ptr<IfNode>>(node)->else_case;
-
-        std::shared_ptr<Value> expr_value = res->register_result(this->visit(_expr.first, context));
+        std::shared_ptr<Value> else_value = res->register_result(this->visit(std::get<std::shared_ptr<IfNode>>(node)->else_case, context));
         if (res->error->error_name != "") { return res; }
 
-        return res->success(_should_return_null ? std::make_shared<Number>(0) : expr_value);
+        return res->success(else_value);
     }
 
-    return res->success(std::make_shared<Number>(0));
+    return res->success(nullptr);
 }
 
 /**
@@ -443,19 +438,17 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
     std::vector<std::shared_ptr<Value>> elements;
 
-    std::shared_ptr<Value> value;
-
     std::shared_ptr<Number> start_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->start_value_node, context)));
-    if (res->should_return()) { return res; }
+    if (res->error->error_name != "") { return res; }
 
     std::shared_ptr<Number> end_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->end_value_node, context)));
-    if (res->should_return()) { return res; }
+    if (res->error->error_name != "") { return res; }
 
     std::shared_ptr<Number> step_value = std::make_shared<Number>(1);
     if (std::get<std::shared_ptr<ForNode>>(node)->step_value_node != ALL_VARIANT{}) /* check if step_value_node is empty */
     {
         step_value = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->step_value_node, context)));
-        if (res->should_return()) { return res; }
+        if (res->error->error_name != "") { return res; }
     }
 
     double i = start_value->value;
@@ -475,16 +468,11 @@ std::shared_ptr<RTResult> Interpreter::visit_ForNode(ALL_VARIANT node, std::shar
 
         i += step_value->value;
 
-        value = res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->body_node, context));
-        if (res->should_return() && res->loop_should_continue == false && res->loop_should_break == false) { return res; }
-
-        if (res->loop_should_continue) { continue; }
-        if (res->loop_should_break) { break; }
-
-        elements.push_back(value);
+        elements.push_back(res->register_result(this->visit(std::get<std::shared_ptr<ForNode>>(node)->body_node, context)));
+        if (res->error->error_name != "") { return res; }
     }
 
-    return res->success(std::get<std::shared_ptr<ForNode>>(node)->should_return_null ? std::static_pointer_cast<Value>(std::make_shared<Number>(0)) : std::make_shared<List> (
+    return res->success(std::make_shared<List> (
         elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
     ));
 }
@@ -499,8 +487,6 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
     std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
     std::vector<std::shared_ptr<Value>> elements;
 
-    std::shared_ptr<Value> value;
-
     while (true)
     {
         std::shared_ptr<Number> condition = std::dynamic_pointer_cast<Number>(res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->condition_node, context)));
@@ -508,17 +494,12 @@ std::shared_ptr<RTResult> Interpreter::visit_WhileNode(ALL_VARIANT node, std::sh
 
         if (!condition->is_true()) break;
 
-        value = res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context));
-        if (res->should_return() && res->loop_should_continue == false && res->loop_should_break == false) { return res; }
-
-        if (res->loop_should_continue) { continue; }
-        if (res->loop_should_break) { break; }
-
-        elements.push_back(value);
+        elements.push_back(res->register_result(this->visit(std::get<std::shared_ptr<WhileNode>>(node)->body_node, context)));
+        if (res->error->error_name != "") { return res; }
     }
 
-    return res->success((std::get<std::shared_ptr<WhileNode>>(node)->should_return_null) ? std::static_pointer_cast<Value>(std::make_shared<Number>(0)) : std::make_shared<List> (
-        elements, context, std::get<std::shared_ptr<WhileNode>>(node)->pos_start, std::get<std::shared_ptr<WhileNode>>(node)->pos_end
+    return res->success(std::make_shared<List> (
+        elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
     ));
 }
 
@@ -543,8 +524,8 @@ std::shared_ptr<RTResult> Interpreter::visit_DoNode(ALL_VARIANT node, std::share
         if (res->error->error_name != "") { return res; }
     }
 
-    return res->success(std::get<std::shared_ptr<DoNode>>(node)->should_return_null ? std::static_pointer_cast<Value>(std::make_shared<Number>(0)) : std::make_shared<List> (
-        elements, context, std::get<std::shared_ptr<DoNode>>(node)->pos_start, std::get<std::shared_ptr<DoNode>>(node)->pos_end
+    return res->success(std::make_shared<List> (
+        elements, context, std::get<std::shared_ptr<ForNode>>(node)->pos_start, std::get<std::shared_ptr<ForNode>>(node)->pos_end
     ));
 }
 
@@ -566,7 +547,7 @@ std::shared_ptr<RTResult> Interpreter::visit_FuncDefNode(ALL_VARIANT node, std::
         arg_names.push_back(i.value);
     }
     
-    std::shared_ptr<Function> func_value = std::make_shared<Function>(func_name, body_node, arg_names, std::get<std::shared_ptr<FuncDefNode>>(node)->should_auto_return);
+    std::shared_ptr<Function> func_value = std::make_shared<Function>(func_name, body_node, arg_names);
 
     func_value->context = context;
     func_value->pos_start = std::get<std::shared_ptr<FuncDefNode>>(node)->pos_start;
@@ -615,44 +596,4 @@ std::shared_ptr<RTResult> Interpreter::visit_CallNode(ALL_VARIANT node, std::sha
     return_value->context = context;
 
     return res->success(return_value);
-}
-
-/**
- * Function handling RETURN statement
- * @param node node
- * @param context context
-*/
-std::shared_ptr<RTResult> Interpreter::visit_ReturnNode(ALL_VARIANT node, std::shared_ptr<Context> context)
-{
-    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
-    std::shared_ptr<Value> value;
-
-    /* TODO: perform check as in CodePulse's code */
-
-    value = res->register_result(this->visit(std::get<std::shared_ptr<ReturnNode>>(node)->node_to_return, context));
-    if (res->should_return()) { return res; }
-
-    return res->success_return(value);
-}
-
-/**
- * Function handling CONTINUE statement
- * @param node node
- * @param context context
-*/
-std::shared_ptr<RTResult> Interpreter::visit_ContinueNode(ALL_VARIANT node, std::shared_ptr<Context> context)
-{
-    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
-    return res->success_continue();
-}
-
-/**
- * Function handling BREAK statement
- * @param node node
- * @param context context
-*/
-std::shared_ptr<RTResult> Interpreter::visit_BreakNode(ALL_VARIANT node, std::shared_ptr<Context> context)
-{
-    std::shared_ptr<RTResult> res = std::make_shared<RTResult>();
-    return res->success_break();
 }

@@ -197,19 +197,3 @@ class NoBuiltInFunction : public std::exception
 
         const char* what() const noexcept override { return "[NoBuiltInFunction] There is no such built in function"; }
 };
-
-class WrongAny : public std::exception
-{
-    public:
-        WrongAny() noexcept = default;
-
-        const char* what() const noexcept override { return "[WrongAny] Wrong type in std::any, expected ALL_VARIANT"; }
-};
-
-class ConvertError : public std::exception
-{
-    public:
-        ConvertError() noexcept = default;
-
-        const char* what() const noexcept override { return "[ConvertError] Error while converting vector"; }
-};

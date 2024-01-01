@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <any>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -30,19 +29,16 @@ class ParseResult : public std::enable_shared_from_this<ParseResult>
         ~ParseResult();
 
         void register_advancement();
-        std::any register_result(std::shared_ptr<ParseResult> res);
-        std::any try_register(std::shared_ptr<ParseResult> res);
+        ALL_VARIANT register_result(std::shared_ptr<ParseResult> res);
 
-        std::shared_ptr<ParseResult> success(std::any node);
+        std::shared_ptr<ParseResult> success(ALL_VARIANT node);
         std::shared_ptr<ParseResult> failure(std::shared_ptr<Error> error);
 
     public:
-        std::any node;
-        std::shared_ptr<Error> error = std::make_shared<Error>(std::make_shared<Position>(0, 0, 0, "", ""), std::make_shared<Position>(0, 0, 0, "", ""), "", "");
-
-        size_t last_registered_advance_count = 0;
         size_t advance_count = 0;
-        size_t to_reverse_count = 0;
+
+        std::shared_ptr<Error> error = std::make_shared<Error>(std::make_shared<Position>(0, 0, 0, "", ""), std::make_shared<Position>(0, 0, 0, "", ""), "", "");
+        ALL_VARIANT node;
 };
 
 /* ---------------------------------------------------------------------------- */
@@ -54,12 +50,8 @@ class Parser
         virtual ~Parser();
 
         Token advance();
-        Token reverse(size_t amount=1);
-        void update_current_tok();
         std::shared_ptr<ParseResult> parse();
 
-        std::shared_ptr<ParseResult> statements();
-        std::shared_ptr<ParseResult> statment();
         std::shared_ptr<ParseResult> expr();
         std::shared_ptr<ParseResult> comp_expr();
         std::shared_ptr<ParseResult> arith_expr();
@@ -70,10 +62,6 @@ class Parser
         std::shared_ptr<ParseResult> atom();
         std::shared_ptr<ParseResult> list_expr();
         std::shared_ptr<ParseResult> if_expr();
-        std::shared_ptr<ParseResult> if_expr_b();
-        std::shared_ptr<ParseResult> if_expr_c();
-        std::shared_ptr<ParseResult> if_expr_b_or_c();
-        std::shared_ptr<ParseResult> if_expr_cases(std::string case_keyword);
         std::shared_ptr<ParseResult> for_expr();
         std::shared_ptr<ParseResult> while_expr();
         std::shared_ptr<ParseResult> do_expr();

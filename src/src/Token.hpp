@@ -49,43 +49,34 @@ enum TT
         ARROW,
 
     /* Other */
-        NEW_LINE,
         END_OF_FILE,
         NUL,
 };
 
 static const std::string KEYWORDS[] = {
-    /* Declaring variables (0) */
+    /* Declaring variables */
         "LET",
     
-    /* Logical operators (3) */
+    /* Logical operators */
         "AND",
         "OR",
         "NOT",
 
-    /* IF statments (7) */
+    /* IF statments */
         "IF",
         "THEN",
         "ELSE IF",
         "ELSE",
 
-    /* FOR, WHILE and DO statment (12) */
+    /* FOR, WHILE and DO statment */
         "FOR",
         "UNTIL",
         "STEP",
         "WHILE",
         "DO",
 
-    /* Functions (13) */
-        "FN",
-
-    /* RETURN, CONTINUE, BREAK (16) */
-        "RETURN",
-        "CONTINUE,"
-        "BREAK",
-
-    /* Other (17) */
-        "END",
+    /* Functions */
+        "FN"
 };
 
 class Token

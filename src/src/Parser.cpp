@@ -18,13 +18,11 @@ ParseResult::~ParseResult()
 
 void ParseResult::register_advancement()
 {
-    this->last_registered_advance_count = 1;
     this->advance_count++;
 }
 
-std::any ParseResult::register_result(std::shared_ptr<ParseResult> res)
+ALL_VARIANT ParseResult::register_result(std::shared_ptr<ParseResult> res)
 {
-    this->last_registered_advance_count = res->advance_count;
     this->advance_count += res->advance_count;
 
     if (res->error->error_name != "")
@@ -35,18 +33,7 @@ std::any ParseResult::register_result(std::shared_ptr<ParseResult> res)
     return res->node;
 }
 
-std::any ParseResult::try_register(std::shared_ptr<ParseResult> res)
-{
-    if (res->error->error_name != "")
-    {
-        this->to_reverse_count = res->advance_count;
-        return std::make_shared<NumberNode>(TT::NUL);
-    }
-
-    return res->register_result(res);
-}
-
-std::shared_ptr<ParseResult> ParseResult::success(std::any node)
+std::shared_ptr<ParseResult> ParseResult::success(ALL_VARIANT node)
 {
     this->node = node;
     return std::shared_ptr<ParseResult>(shared_from_this());
@@ -54,7 +41,7 @@ std::shared_ptr<ParseResult> ParseResult::success(std::any node)
 
 std::shared_ptr<ParseResult> ParseResult::failure(std::shared_ptr<Error> error)
 {
-    if (this->error->error_name == "" || this->last_registered_advance_count == 0) /* there is no error and therefore error_name is empty */
+    if (this->error->error_name == "" || this->advance_count == 0) /* there is no error and therefore error_name is empty */
     {
         this->error = error;
     }
@@ -95,153 +82,24 @@ Token Parser::advance()
     return this->current_tok;
 }
 
-Token Parser::reverse(size_t amount)
-{
-    this->tok_idx -= amount;
-    this->update_current_tok();
-    
-    return this->current_tok;
-}
-
-void Parser::update_current_tok()
-{
-    if (this->tok_idx < this->tokens.size())
-    {
-        this->current_tok = this->tokens.at(this->tok_idx);
-    }
-}
-
 std::shared_ptr<ParseResult> Parser::parse()
 {
-    std::shared_ptr<ParseResult> res = this->statements();
+    std::shared_ptr<ParseResult> res = this->expr();
 
     if (res->error->error_name == "" && this->current_tok.type != TT::END_OF_FILE)
     {
-        return res->failure(std::make_shared<InvalidSyntaxError> (
-            this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'AND' or 'OR'"
-        ));
+        return res->failure (
+            std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'AND' or 'OR'"
+            )
+        );
     }
 
     return res;
 }
 
 /* ------------------------------------ */
-
-std::shared_ptr<ParseResult> Parser::statements()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    std::vector<std::any> statements;
-    std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
-
-    /* Check if current character is new line */
-    while (this->current_tok.type == TT::NEW_LINE)
-    {
-        /* Advance to next character */
-        res->register_advancement();
-        this->advance();
-    }
-
-    std::any statement = res->register_result(this->statment());
-    if (res->error->error_name != "") { return res; }
-
-    statements.push_back(statement);
-    bool more_statments = true;
-
-    while (true)
-    {
-        size_t newline_count = 0;
-        while (this->current_tok.type == TT::NEW_LINE)
-        {
-            res->register_advancement();
-            this->advance();
-
-            newline_count++;
-        }
-
-        if (newline_count == 0)
-        {
-            more_statments = false;
-        }
-
-        if (!more_statments) break;
-        statement = res->try_register(this->statment());
-
-        if (statement.type() == typeid(std::shared_ptr<NumberNode>))
-        {
-            if (std::any_cast<std::shared_ptr<NumberNode>>(statement)->tok.type == TT::NUL)
-            {
-                this->reverse(res->to_reverse_count);
-                more_statments = false;
-                continue;
-            }
-        }
-
-        statements.push_back(statement);
-    }
-
-    return res->success(std::make_shared<ListNode> (
-        statements,
-        pos_start,
-        this->current_tok.pos_end->copy()
-    ));
-}
-
-std::shared_ptr<ParseResult> Parser::statment()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
-
-    ALL_VARIANT expr;
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[14]))
-    {
-        res->register_advancement();
-        this->advance();
-
-        std::any expr_temp = res->try_register(this->expr());
-        ANY_CAST(expr_temp, expr);
-
-        if (std::holds_alternative<std::shared_ptr<NumberNode>>(expr))
-        {
-            if (std::get<std::shared_ptr<NumberNode>>(expr)->tok.type == TT::NUL)
-            {
-                this->reverse(res->to_reverse_count);
-            }
-        }
-
-        return res->success(std::make_shared<ReturnNode>(expr, pos_start, this->current_tok.pos_start->copy()));
-    }
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[15]))
-    {
-        res->register_advancement();
-        this->advance();
-
-        return res->success(std::make_shared<ContinueNode>(pos_start, this->current_tok.pos_start->copy()));
-    }
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[16]))
-    {
-        res->register_advancement();
-        this->advance();
-
-        return res->success(std::make_shared<BreakNode>(pos_start, this->current_tok.pos_start->copy()));
-    }
-
-    std::any expr_temp = res->register_result(this->expr());
-    if (res->error->error_name != "")
-    {
-        return res->failure(std::make_shared<InvalidSyntaxError> (
-            this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected 'RETURN', 'CONTINUE', 'BREAK', 'LET', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[', or 'NOT'"
-        ));
-    }
-
-    ANY_CAST(expr_temp, expr)
-    return res->success(expr);
-}
 
 std::shared_ptr<ParseResult> Parser::expr()
 {
@@ -288,7 +146,7 @@ std::shared_ptr<ParseResult> Parser::expr()
     };
 
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->comp_expr(); };
-    std::any node = res->register_result(this->bin_op(fac, ops));
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
 
     if (res->error->error_name != "") 
     {
@@ -312,7 +170,7 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
         res->register_advancement();
         this->advance();
 
-        std::any node = res->register_result(this->comp_expr());
+        ALL_VARIANT node = res->register_result(this->comp_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(std::make_shared<UnaryOpNode>(op_tok, node));
@@ -328,7 +186,7 @@ std::shared_ptr<ParseResult> Parser::comp_expr()
     };
 
     std::function<std::shared_ptr<ParseResult>()> fac = [this]() { return this->arith_expr(); };
-    std::any node = res->register_result(this->bin_op(fac, ops));
+    ALL_VARIANT node = res->register_result(this->bin_op(fac, ops));
 
     if (res->error->error_name != "") 
     { 
@@ -373,7 +231,7 @@ std::shared_ptr<ParseResult> Parser::factor()
         res->register_advancement();
         this->advance();
 
-        std::any factor = res->register_result(this->factor());
+        auto factor = res->register_result(this->factor());
         if (res->error->error_name != "") { return res; }
 
         return res->success(std::make_shared<UnaryOpNode>(tok, factor));
@@ -397,7 +255,7 @@ std::shared_ptr<ParseResult> Parser::call()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    std::any atom = res->register_result(this->atom());
+    ALL_VARIANT atom = res->register_result(this->atom());
     if (res->error->error_name != "") { return res; }
 
     if (this->current_tok.type == TT::LPAREN)
@@ -405,7 +263,7 @@ std::shared_ptr<ParseResult> Parser::call()
         res->register_advancement();
         this->advance();
 
-        std::vector<std::any> arg_nodes;
+        std::vector<ALL_VARIANT> arg_nodes;
 
         if (this->current_tok.type == TT::RPAREN)
         {
@@ -485,7 +343,7 @@ std::shared_ptr<ParseResult> Parser::atom()
         res->register_advancement();
         this->advance();
 
-        std::any expr = res->register_result(this->expr());
+        auto expr = res->register_result(this->expr());
         if (res->error->error_name != "") { return res; }
 
         if (this->current_tok.type == TT::RPAREN)
@@ -507,7 +365,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.type == TT::LSQUARE)
     {
-        std::any list_expr = res->register_result(this->list_expr());
+        ALL_VARIANT list_expr = res->register_result(this->list_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(list_expr);
@@ -515,7 +373,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.matches(TT::KEYWORD, KEYWORDS[4]))
     {
-        std::any if_expr = res->register_result(this->if_expr());
+        ALL_VARIANT if_expr = res->register_result(this->if_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(if_expr);
@@ -523,7 +381,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.matches(TT::KEYWORD, KEYWORDS[8]))
     {
-        std::any for_expr = res->register_result(this->for_expr());
+        ALL_VARIANT for_expr = res->register_result(this->for_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(for_expr);
@@ -531,7 +389,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.matches(TT::KEYWORD, KEYWORDS[11]))
     {
-        std::any while_expr = res->register_result(this->while_expr());
+        ALL_VARIANT while_expr = res->register_result(this->while_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(while_expr);
@@ -539,7 +397,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.matches(TT::KEYWORD, KEYWORDS[12]))
     {
-        std::any do_expr = res->register_result(this->do_expr());
+        ALL_VARIANT do_expr = res->register_result(this->do_expr());
         if (res->error->error_name != "") { return res; }
 
         return res->success(do_expr);
@@ -547,7 +405,7 @@ std::shared_ptr<ParseResult> Parser::atom()
 
     else if (tok.matches(TT::KEYWORD, KEYWORDS[13]))
     {
-        std::any func_def = res->register_result(this->func_def());
+        ALL_VARIANT func_def = res->register_result(this->func_def());
         if (res->error->error_name != "") { return res; }
 
         return res->success(func_def);
@@ -563,7 +421,7 @@ std::shared_ptr<ParseResult> Parser::list_expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
 
-    std::vector<std::any> element_nodes;
+    std::vector<ALL_VARIANT> element_nodes;
     std::shared_ptr<Position> pos_start = this->current_tok.pos_start->copy();
 
     if (this->current_tok.type != TT::LSQUARE)
@@ -622,121 +480,21 @@ std::shared_ptr<ParseResult> Parser::list_expr()
 std::shared_ptr<ParseResult> Parser::if_expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
+    std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
+    ALL_VARIANT else_case;
 
-    std::any all_cases = res->register_result(this->if_expr_cases(KEYWORDS[4]));
-    if (res->error->error_name != "") { return res; }
-
-    std::any cases;
-    std::any else_case;
-
-    cases = all_cases;
-    else_case = all_cases;
-
-    return res->success(std::make_shared<IfNode>(cases, else_case));
-}
-
-std::shared_ptr<ParseResult> Parser::if_expr_b()
-{
-    return this->if_expr_cases(KEYWORDS[6]);
-}
-
-std::shared_ptr<ParseResult> Parser::if_expr_c()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-    std::pair<std::any, bool> else_case;
-
-    std::any _statements;
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[7]))
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[4]))
     {
-        res->register_advancement();
-        this->advance();
-
-        if (this->current_tok.type == TT::NEW_LINE)
-        {
-            res->register_advancement();
-            this->advance();
-
-            _statements = res->register_result(this->statements());
-            if (res->error->error_name != "") { return res; }
-
-            else_case = std::make_pair(_statements, true);
-
-            if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
-            {
-                res->register_advancement();
-                this->advance();
-            }
-
-            else
-            {
-                return res->failure(std::make_shared<InvalidSyntaxError> (
-                    this->current_tok.pos_start, this->current_tok.pos_end,
-                    "Expected 'END'"
-                ));
-            }
-        }
-
-        else
-        {
-            std::any expr = res->register_result(this->statment());
-            if (res->error->error_name != "") { return res; }
-
-            else_case = std::make_pair(expr, false);
-        }
-    }
-
-    return res->success(else_case);
-}
-
-std::shared_ptr<ParseResult> Parser::if_expr_b_or_c()
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    std::any cases;
-    std::any else_case;
-
-    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[6]))
-    {
-        std::any all_cases = res->register_result(this->if_expr_b());
-        if (res->error->error_name != "") { return res; }
-
-        cases = all_cases;
-        else_case = all_cases;
-    }
-
-    else
-    {
-        else_case = res->register_result(this->if_expr_c());
-        if (res->error->error_name != "") { return res; }
-    }
-
-    return res->success(std::make_pair(cases, else_case));
-}
-
-std::shared_ptr<ParseResult> Parser::if_expr_cases(std::string case_keyword)
-{
-    std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    std::vector<std::any> cases;
-    std::any else_case;
-
-    std::any new_cases;
-    std::any all_cases;
-
-    if (!this->current_tok.matches(TT::KEYWORD, case_keyword))
-    {
-        std::string details = std::string("Expected '") += case_keyword += std::string("'");
-        res->failure(std::make_shared<InvalidSyntaxError> (
+        return res->failure(std::make_shared<InvalidSyntaxError> (
             this->current_tok.pos_start, this->current_tok.pos_end,
-            details
+            "Expected 'IF'"
         ));
     }
 
     res->register_advancement();
     this->advance();
 
-    std::any condition = res->register_result(this->expr());
+    ALL_VARIANT condition = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
     if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
@@ -750,46 +508,46 @@ std::shared_ptr<ParseResult> Parser::if_expr_cases(std::string case_keyword)
     res->register_advancement();
     this->advance();
 
-    if (this->current_tok.type == TT::NEW_LINE)
+    ALL_VARIANT expr = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    cases.push_back(std::make_pair(condition, expr));
+
+    while (this->current_tok.matches(TT::KEYWORD, KEYWORDS[6]))
     {
         res->register_advancement();
         this->advance();
 
-        std::any statments = res->register_result(this->statements());
+        condition = res->register_result(this->expr());
         if (res->error->error_name != "") { return res; }
 
-        cases.push_back(std::make_tuple(condition, statments, true));
-
-        if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
+        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
         {
-            res->register_advancement();
-            this->advance();
+            return res->failure(std::make_shared<InvalidSyntaxError> (
+                this->current_tok.pos_start, this->current_tok.pos_end,
+                "Expected 'THEN'"
+            ));
         }
 
-        else
-        {
-            all_cases = res->register_result(this->if_expr_b_or_c());
-            if (res->error->error_name != "") { return res; }
+        res->register_advancement();
+        this->advance();
 
-            new_cases = else_case = all_cases;
-            cases.push_back(new_cases);
-        }
+        expr = res->register_result(this->expr());
+        if (res->error->error_name != "") { return res; }
+
+        cases.push_back(std::make_pair(condition, expr));
     }
 
-    else
+    if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[7]))
     {
-        std::any expr = res->register_result(this->statment());
+        res->register_advancement();
+        this->advance();
+
+        else_case = res->register_result(this->expr());
         if (res->error->error_name != "") { return res; }
-
-        cases.push_back(std::make_tuple(condition, expr, false));
-
-        all_cases = res->register_result(this->if_expr_b_or_c());
-        if (res->error->error_name != "") { return res; }
-
-        new_cases = else_case = all_cases;
     }
 
-    return res->success(std::make_pair(cases, else_case));
+    return res->success(std::make_shared<IfNode>(cases, else_case));
 }
 
 std::shared_ptr<ParseResult> Parser::for_expr()
@@ -831,7 +589,7 @@ std::shared_ptr<ParseResult> Parser::for_expr()
     res->register_advancement();
     this->advance();
 
-    std::any start_value = res->register_result(this->expr());
+    ALL_VARIANT start_value = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
     if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[9]))
@@ -845,8 +603,8 @@ std::shared_ptr<ParseResult> Parser::for_expr()
     res->register_advancement();
     this->advance();
 
-    std::any end_value = res->register_result(this->expr());
-    std::any step_value;
+    ALL_VARIANT end_value = res->register_result(this->expr());
+    ALL_VARIANT step_value;
 
     if (res->error->error_name != "") { return res; }
     if (this->current_tok.matches(TT::KEYWORD, KEYWORDS[10]))
@@ -866,32 +624,13 @@ std::shared_ptr<ParseResult> Parser::for_expr()
         ));
     }
 
-    if (this->current_tok.type == TT::NEW_LINE)
-    {
-        res->register_advancement();
-        this->advance();
+    res->register_advancement();
+    this->advance();
 
-        std::any body = res->register_result(this->statements());
-        if (res->error->error_name != "") { return res; }
-
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected 'END'"
-            ));
-        }
-
-        res->register_advancement();
-        this->advance();
-
-        return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body, true));
-    }
-
-    std::any body = res->register_result(this->statment());
+    ALL_VARIANT body = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
-    return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body, false));
+    return res->success(std::make_shared<ForNode>(var_name, start_value, end_value, step_value, body));
 }
 
 std::shared_ptr<ParseResult> Parser::while_expr()
@@ -909,7 +648,7 @@ std::shared_ptr<ParseResult> Parser::while_expr()
     res->register_advancement();
     this->advance();
 
-    std::any condition = res->register_result(this->expr());
+    ALL_VARIANT condition = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
     if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[5]))
@@ -923,39 +662,15 @@ std::shared_ptr<ParseResult> Parser::while_expr()
     res->register_advancement();
     this->advance();
 
-    if (this->current_tok.type == TT::NEW_LINE)
-    {
-        res->register_advancement();
-        this->advance();
-
-        std::any body = res->register_result(this->statements());
-        if (res->error->error_name != "") { return res; }
-
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected 'END'"
-            ));
-        }
-
-        res->register_advancement();
-        this->advance();
-
-        return res->success(std::make_shared<WhileNode>(condition, body, true));
-    }
-
-    std::any body = res->register_result(this->statment());
+    ALL_VARIANT body = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
-    return res->success(std::make_shared<WhileNode>(condition, body, false));
+    return res->success(std::make_shared<WhileNode>(condition, body));
 }
 
 std::shared_ptr<ParseResult> Parser::do_expr()
 {
     std::shared_ptr<ParseResult> res = std::make_shared<ParseResult>();
-
-    std::any body;
 
     if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[12]))
     {
@@ -965,59 +680,32 @@ std::shared_ptr<ParseResult> Parser::do_expr()
         ));
     }
 
-    /* Check for new line */
-    if (this->current_tok.type == TT::NEW_LINE)
-    {
-        /* Go to body of statment */
-        res->register_advancement();
-        this->advance();
+    /* Go to body of statment */
+    res->register_advancement();
+    this->advance();
 
-        /* Body */
-        body = res->register_result(this->statements());
-        if (res->error->error_name != "") { return res; }
-
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected 'END'"
-            ));
-        }
-
-        /* Go to condition of statment */
-        res->register_advancement();
-        this->advance();
-    }
-
-    else
-    {
-        /* Go to body of statment */
-        res->register_advancement();
-        this->advance();
-
-        /* Body */
-        body = res->register_result(this->expr());
-        if (res->error->error_name != "") { return res; }
-
-        /* We do not need to advance since we last call was `expr()` function */
-
-        if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[11]))
-        {
-            return res->failure(std::make_shared<InvalidSyntaxError> (
-                this->current_tok.pos_start, this->current_tok.pos_end,
-                "Expected 'WHILE'"
-            ));
-        }
-
-        /* Go to condition of statment */
-        res->register_advancement();
-        this->advance();
-    }
-
-    std::any condition = res->register_result(this->statment());
+    /* Body */
+    ALL_VARIANT body = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
-    return res->success(std::make_shared<DoNode>(body, condition, false));
+    /* We do not need to advance since we last call was `expr()` function */
+
+    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[11]))
+    {
+        return res->failure(std::make_shared<InvalidSyntaxError> (
+            this->current_tok.pos_start, this->current_tok.pos_end,
+            "Expected 'WHILE'"
+        ));
+    }
+
+    /* Go to condition of statment */
+    res->register_advancement();
+    this->advance();
+
+    ALL_VARIANT condition = res->register_result(this->expr());
+    if (res->error->error_name != "") { return res; }
+
+    return res->success(std::make_shared<DoNode>(body, condition));
 }
 
 std::shared_ptr<ParseResult> Parser::func_def()
@@ -1117,48 +805,21 @@ std::shared_ptr<ParseResult> Parser::func_def()
     res->register_advancement();
     this->advance();
 
-    if (this->current_tok.type == TT::ARROW)
-    {
-        res->register_advancement();
-        this->advance();
-
-        std::any body = res->register_result(this->expr());
-        if (res->error->error_name != "") { return res; }
-
-        return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, body, true));
-    }
-
-    if (this->current_tok.type != TT::NEW_LINE)
+    if (this->current_tok.type != TT::ARROW)
     {
         return res->failure(std::make_shared<InvalidSyntaxError> (
             this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected '->' or NEW_LINE"
+            "Expected '->'"
         ));
     }
 
     res->register_advancement();
     this->advance();
 
-    std::any body = res->register_result(this->statements());
+    ALL_VARIANT node_to_return = res->register_result(this->expr());
     if (res->error->error_name != "") { return res; }
 
-    if (!this->current_tok.matches(TT::KEYWORD, KEYWORDS[17]))
-    {
-        return res->failure(std::make_shared<InvalidSyntaxError> (
-            this->current_tok.pos_start, this->current_tok.pos_end,
-            "Expected 'END'"
-        ));
-    }
-
-    res->register_advancement();
-    this->advance();
-
-    return res->success(std::make_shared<FuncDefNode> (
-        var_name_tok,
-        arg_name_toks,
-        body,
-        false
-    ));
+    return res->success(std::make_shared<FuncDefNode>(var_name_tok, arg_name_toks, node_to_return));
 }
 
 std::shared_ptr<ParseResult> Parser::bin_op(std::function<std::shared_ptr<ParseResult>()> func_a, std::vector<std::pair<TT, std::string>>& ops, std::function<std::shared_ptr<ParseResult>()> func_b)

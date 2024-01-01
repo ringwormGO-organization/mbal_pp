@@ -3,8 +3,6 @@
 
 mbal is general-purpose (mainly designed for testing) programming langauge
 
-# **THIS IMPLEMENTATION MIGHT BE SLOW AND/OR BUGGY**
-
 ## TODO
 ### From Code Pulse's tutorial
 - [x] EP 1 - Lexer
@@ -18,9 +16,9 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] EP 9 - Strings
 - [x] EP 10 - Lists
 - [x] EP 11 - Built-in Functions
-- [x] EP 12 - Mutli-line statments
-- [x] EP 13 - RETURN, CONTINUE and BREAK
-- [x] EP 14 - RUN statments and comments
+- [ ] EP 12 - Mutli-line statments
+- [ ] EP 13 - RETURN, CONTINUE and BREAK
+- [ ] EP 14 - RUN statments and comments
 - [x] EP BONUS - Power operator
 
 ### Code Pulse's GitHub PRs
@@ -33,10 +31,6 @@ mbal is general-purpose (mainly designed for testing) programming langauge
 - [x] `DO` keyword
 - [ ] Generics
 - [ ] Self hosted
-
-### Important
-- [ ] Fix IF statment
-- [ ] remove `std::any`
 
 ## Credits
 - [ChatGPT](ai.com)

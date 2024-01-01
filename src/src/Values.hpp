@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -32,15 +31,9 @@ class WhileNode;
 class DoNode;
 class FuncDefNode;
 class CallNode;
-class ReturnNode;
-class ContinueNode;
-class BreakNode;
 
 class Context;
 class Error;
-class Lexer;
-class Parser;
-class ParseResult;
 class Position;
 class RTResult;
 class Token;
@@ -206,7 +199,7 @@ class BaseFunction : virtual public Value
 class Function : public BaseFunction
 {
     public:
-        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, bool should_auto_return, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
+        Function(std::string name, ALL_VARIANT body_node, std::vector<std::string> arg_names, std::shared_ptr<Context> context=nullptr, std::shared_ptr<Position> pos_start = nullptr, std::shared_ptr<Position> pos_end = nullptr);
         ~Function();
 
     public:
@@ -223,7 +216,6 @@ class Function : public BaseFunction
         std::string name = "";
         ALL_VARIANT body_node;
         std::vector<std::string> arg_names;
-        bool should_auto_return;
 };
 
 /* ---------------------------------------------------------------------------- */
@@ -246,8 +238,6 @@ class BuiltInFunction : public BaseFunction
         std::shared_ptr<RTResult> execute_clear(std::shared_ptr<Context> exec_ctx);
         std::shared_ptr<RTResult> execute_print(std::shared_ptr<Context> exec_ctx);
         std::shared_ptr<RTResult> execute_write(std::shared_ptr<Context> exec_ctx);
-        std::shared_ptr<RTResult> execute_len(std::shared_ptr<Context> exec_ctx);
-        std::shared_ptr<RTResult> execute_run(std::shared_ptr<Context> exec_ctx);
 
     private:
         std::vector<std::string> arg_names;

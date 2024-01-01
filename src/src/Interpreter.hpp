@@ -109,28 +109,28 @@ class Interpreter
         std::shared_ptr<RTResult> visit_UnaryOpNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         /**
-         * Function handling IF statement
+         * Function handling IF statment
          * @param node node
          * @param context context
         */
         std::shared_ptr<RTResult> visit_IfNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         /**
-         * Function handling FOR statement
+         * Function handling FOR statment
          * @param node node
          * @param context context
         */
         std::shared_ptr<RTResult> visit_ForNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         /**
-         * Function handling WHILE statement
+         * Function handling WHILE statment
          * @param node node
          * @param context context
         */
         std::shared_ptr<RTResult> visit_WhileNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 
         /**
-         * Function handling DO statement, very similar to `visit_WhileNode()` function
+         * Function handling DO statment, very similar to `visit_WhileNode()` function
          * @param node node
          * @param context context
         */
@@ -149,25 +149,4 @@ class Interpreter
          * @param context context
         */
         std::shared_ptr<RTResult> visit_CallNode(ALL_VARIANT node, std::shared_ptr<Context> context);
-
-        /**
-         * Function handling RETURN statement
-         * @param node node
-         * @param context context
-        */
-        std::shared_ptr<RTResult> visit_ReturnNode(ALL_VARIANT node, std::shared_ptr<Context> context);
-
-        /**
-         * Function handling CONTINUE statement
-         * @param node node
-         * @param context context
-        */
-        std::shared_ptr<RTResult> visit_ContinueNode(ALL_VARIANT node, std::shared_ptr<Context> context);
-
-        /**
-         * Function handling BREAK statement
-         * @param node node
-         * @param context context
-        */
-        std::shared_ptr<RTResult> visit_BreakNode(ALL_VARIANT node, std::shared_ptr<Context> context);
 };

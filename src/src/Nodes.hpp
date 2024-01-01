@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <any>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -14,7 +13,6 @@
 #include <variant>
 #include <vector>
 
-#include "Error.hpp"
 #include "Token.hpp"
 
 #include "define.hpp"
@@ -32,136 +30,6 @@ class WhileNode;
 class DoNode;
 class FuncDefNode;
 class CallNode;
-class ReturnNode;
-class ContinueNode;
-class BreakNode;
-
-#define ANY_CAST(sender, receiver) \
-    if (sender.type() == typeid(std::shared_ptr<NumberNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<NumberNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<StringNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<StringNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<ListNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<ListNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<VarAccessNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<VarAccessNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<VarAssignNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<VarAssignNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<BinOpNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<BinOpNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<UnaryOpNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<IfNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<IfNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<WhileNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<WhileNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<DoNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<DoNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<FuncDefNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<FuncDefNode>>(sender); \
-    } \
-    \
-    else if (sender.type() == typeid(std::shared_ptr<CallNode>)) \
-    { \
-        receiver = std::any_cast<std::shared_ptr<CallNode>>(sender); \
-    } \
-    \
-    else \
-    { \
-        throw WrongAny(); \
-    } \
-
-#define ANY_CAST_VECTOR(any_data, converted_error) \
-    if (any_data.type() == typeid(std::shared_ptr<NumberNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<NumberNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<StringNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<StringNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<ListNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<ListNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<VarAccessNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAccessNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<VarAssignNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<VarAssignNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<BinOpNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<BinOpNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<UnaryOpNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<UnaryOpNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<IfNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<IfNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<WhileNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<WhileNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<DoNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<DoNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<FuncDefNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<FuncDefNode>>(any_data)); \
-    } \
-    \
-    else if (any_data.type() == typeid(std::shared_ptr<CallNode>)) \
-    { \
-        converted_vector.push_back(std::any_cast<std::shared_ptr<CallNode>>(any_data)); \
-    } \
 
 /**
  * Number node
@@ -208,7 +76,7 @@ class StringNode
 class ListNode
 {
     public:
-        ListNode(std::vector<std::any> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
+        ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
         virtual ~ListNode() {};
 
         std::string repr();
@@ -245,7 +113,7 @@ class VarAccessNode
 class VarAssignNode
 {
     public:
-        VarAssignNode(Token var_name_tok, std::any value_node);
+        VarAssignNode(Token var_name_tok, ALL_VARIANT value_node);
         ~VarAssignNode();
 
     public:
@@ -265,7 +133,7 @@ class VarAssignNode
 class BinOpNode
 {
     public:
-        BinOpNode(std::any left_node, Token op_tok, std::any right_node);
+        BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node);
         ~BinOpNode() {};
 
         std::string repr();
@@ -287,7 +155,7 @@ class BinOpNode
 class UnaryOpNode
 {
     public:
-        UnaryOpNode(Token op_tok, std::any node);
+        UnaryOpNode(Token op_tok, ALL_VARIANT node);
         ~UnaryOpNode();
 
         std::string repr();
@@ -301,39 +169,36 @@ class UnaryOpNode
 };
 
 /**
- * Node for IF statement
- * @param cases cases for IF statement
- * @param else_case ELSE statement/case
+ * Node for IF statment
+ * @param cases cases for IF statment
+ * @param else_case case for ELSE statment
 */
 class IfNode
 {
     public:
-        IfNode(std::any cases, std::any else_case=std::any());
+        IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case);
         ~IfNode();
 
     public:
-        std::pair<std::vector<std::tuple<ALL_VARIANT, ALL_VARIANT, bool>>, std::any> cases;
-        std::pair<ALL_VARIANT, bool> else_case;
-
-        bool is_else_case_empty = false;                /* do we have ELSE statement */
+        std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases;
+        ALL_VARIANT else_case;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for FOR statement
+ * Node for FOR statment
  * @param var_name_tok variable name token
  * @param start_value_node node holding start value
  * @param end_value_node node holding end value
  * @param step_value_node node holding step value
  * @param body_node node holding body
- * @param should_return_null should class return null
 */
 class ForNode
 {
     public:
-        ForNode(Token var_name_tok, std::any start_value_node, std::any end_value_node, std::any step_value_node, std::any body_node, bool should_return_null);
+        ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node);
         ~ForNode();
 
     public:
@@ -342,49 +207,44 @@ class ForNode
         ALL_VARIANT end_value_node;
         ALL_VARIANT step_value_node;
         ALL_VARIANT body_node;
-        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for WHILE statement
+ * Node for WHILE statment
  * @param condition_node node holding condition
- * @param body_node node holding body of WHILE statement
- * @param should_return_null should class return null
+ * @param body_node node holding body of WHILE statment
 */
 class WhileNode
 {
     public:
-        WhileNode(std::any condition_node, std::any body_node, bool should_return_null);
+        WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node);
         ~WhileNode();
 
     public:
         ALL_VARIANT condition_node;
         ALL_VARIANT body_node;
-        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
 };
 
 /**
- * Node for DO statement, very similar to WHILE statement
- * @param body_node node holding body of DO statement
+ * Node for DO statment, very similar to WHILE statment
+ * @param body_node node holding body of DO statment
  * @param condition_node node holding condition
- * @param should_return_null should class return null
 */
 class DoNode
 {
     public:
-        DoNode(std::any body_node, std::any condition_node, bool should_return_null);
+        DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node);
         ~DoNode();
 
     public:
         ALL_VARIANT condition_node;
         ALL_VARIANT body_node;
-        bool should_return_null;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
@@ -395,19 +255,17 @@ class DoNode
  * @param var_name_tok variable name of token
  * @param arg_name_toks vector holding arguments as Token class, a.k.a tokens
  * @param body_node node holding body of function; code which is executed, code which returns a value to caller
- * @param should_return_null should class return null
 */
 class FuncDefNode
 {
     public:
-        FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, std::any body_node, bool should_auto_return);
+        FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node);
         ~FuncDefNode();
 
     public:
         Token var_name_tok;
         std::vector<Token> arg_name_toks;
         ALL_VARIANT body_node;
-        bool should_auto_return;
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
@@ -421,7 +279,7 @@ class FuncDefNode
 class CallNode
 {
     public:
-        CallNode(std::any node_to_call, std::vector<std::any> arg_nodes);
+        CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes);
         ~CallNode();
 
     public:
@@ -430,55 +288,4 @@ class CallNode
 
         std::shared_ptr<Position> pos_start;            /* starting position */
         std::shared_ptr<Position> pos_end;              /* ending position */
-};
-
-/**
- * Node handling RETURN statement
- * @param node_to_return node which is intended for return
- * @param pos_start starting position
- * @param pos_end ending position
-*/
-class ReturnNode
-{
-    public:
-        ReturnNode(ALL_VARIANT node_to_return, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
-        ~ReturnNode();
-
-    public:
-        ALL_VARIANT node_to_return;
-
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;   
-};
-
-/**
- * Node handling CONTINUE statement
- * @param pos_start starting position
- * @param pos_end ending position
-*/
-class ContinueNode
-{
-    public:
-        ContinueNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
-        ~ContinueNode();
-
-    public:
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;   
-};
-
-/**
- * Node handling BREAK statement
- * @param pos_start starting position
- * @param pos_end ending position
-*/
-class BreakNode
-{
-    public:
-        BreakNode(std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
-        ~BreakNode();
-
-    public:
-        std::shared_ptr<Position> pos_start;
-        std::shared_ptr<Position> pos_end;  
 };
