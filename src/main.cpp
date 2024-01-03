@@ -43,9 +43,12 @@ std::variant<std::shared_ptr<Value>, std::shared_ptr<Error>> run(std::string fn,
     Parser parser(std::get<0>(result));
     std::shared_ptr<ParseResult> ast = parser.parse();
 
-    if (ast->error->error_name != "")
+    if (ast->error != NULL)
     {
-        return ast->error;
+        if (ast->error->error_name != "")
+        {
+            return ast->error;
+        }
     }
 
     /* Run program */
