@@ -38,6 +38,7 @@ class CallNode;
 class NumberNode
 {
     public:
+        NumberNode();
         NumberNode(Token tok);
         virtual ~NumberNode() {};
 
@@ -57,6 +58,7 @@ class NumberNode
 class StringNode
 {
     public:
+        StringNode();
         StringNode(Token tok);
         virtual ~StringNode() {};
 
@@ -76,6 +78,7 @@ class StringNode
 class ListNode
 {
     public:
+        ListNode();
         ListNode(std::vector<ALL_VARIANT> element_nodes, std::shared_ptr<Position> pos_start, std::shared_ptr<Position> pos_end);
         virtual ~ListNode() {};
 
@@ -95,6 +98,7 @@ class ListNode
 class VarAccessNode
 {
     public:
+        VarAccessNode();
         VarAccessNode(Token var_name_tok);
         ~VarAccessNode();
 
@@ -113,6 +117,7 @@ class VarAccessNode
 class VarAssignNode
 {
     public:
+        VarAssignNode();
         VarAssignNode(Token var_name_tok, ALL_VARIANT value_node);
         ~VarAssignNode();
 
@@ -133,6 +138,7 @@ class VarAssignNode
 class BinOpNode
 {
     public:
+        BinOpNode();
         BinOpNode(ALL_VARIANT left_node, Token op_tok, ALL_VARIANT right_node);
         ~BinOpNode() {};
 
@@ -155,6 +161,7 @@ class BinOpNode
 class UnaryOpNode
 {
     public:
+        UnaryOpNode();
         UnaryOpNode(Token op_tok, ALL_VARIANT node);
         ~UnaryOpNode();
 
@@ -176,6 +183,7 @@ class UnaryOpNode
 class IfNode
 {
     public:
+        IfNode();
         IfNode(std::vector<std::pair<ALL_VARIANT, ALL_VARIANT>> cases, ALL_VARIANT else_case);
         ~IfNode();
 
@@ -198,6 +206,7 @@ class IfNode
 class ForNode
 {
     public:
+        ForNode();
         ForNode(Token var_name_tok, ALL_VARIANT start_value_node, ALL_VARIANT end_value_node, ALL_VARIANT step_value_node, ALL_VARIANT body_node);
         ~ForNode();
 
@@ -220,6 +229,7 @@ class ForNode
 class WhileNode
 {
     public:
+        WhileNode();
         WhileNode(ALL_VARIANT condition_node, ALL_VARIANT body_node);
         ~WhileNode();
 
@@ -239,6 +249,7 @@ class WhileNode
 class DoNode
 {
     public:
+        DoNode();
         DoNode(ALL_VARIANT body_node, ALL_VARIANT condition_node);
         ~DoNode();
 
@@ -259,6 +270,7 @@ class DoNode
 class FuncDefNode
 {
     public:
+        FuncDefNode();
         FuncDefNode(Token var_name_tok, std::vector<Token> arg_name_toks, ALL_VARIANT body_node);
         ~FuncDefNode();
 
@@ -279,6 +291,7 @@ class FuncDefNode
 class CallNode
 {
     public:
+        CallNode();
         CallNode(ALL_VARIANT node_to_call, std::vector<ALL_VARIANT> arg_nodes);
         ~CallNode();
 

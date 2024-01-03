@@ -47,6 +47,7 @@ enum TT
     /* Functions */
         COMMA,
         ARROW,
+        NEWLINE,
 
     /* Other */
         END_OF_FILE,
